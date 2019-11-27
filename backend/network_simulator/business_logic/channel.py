@@ -1,14 +1,13 @@
 import random
 from collections import namedtuple
 
-class ChannelSystem:
+class ChannelSystemNode:
     """
     Models randomly selected channels by choosing a random number from 1 to 
     CHANNEL_RANDOMIZATION and records it to an array of size AMOUNT_OF_CHANNELS.
     A channel is randomly selected and then with probably x from 0 to 1 that we
-    have succesful packet run
-    
-    so the larger the channel is the better
+    have succesful packet run. The weight of the channel is 5 - sum(channel_values)
+    and the lower the channel weight is the higher the probability of success
     """
     
     AMOUNT_OF_CHANNELS = 5
@@ -35,7 +34,7 @@ class ChannelSystem:
         
         
 if __name__ == "__main__":
-    c = ChannelSystem()
+    c = ChannelSystemNode()
     print(c)
     for _ in range(5):
         print(c.choose_channel_and_report_result())

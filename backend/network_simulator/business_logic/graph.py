@@ -14,4 +14,3 @@ class RoutingSystemMasterGraph:
     
     def output_system_stats(self):
         pass
-        

@@ -84,9 +84,12 @@ class Grid:
                         ("0" if 0 < self.global_id_inc < 10 else "") + 
                         str(self.global_id_inc))
                     self.grid[y_coor][x_coor] = curr_base_station
-                    create_entry_for_base_station = namedtuple("BaseStationEntry", "base_station_coordinates routable_devices")
+                    create_entry_for_base_station = \
+                                    namedtuple("BaseStationEntry",
+                                    "base_station_coordinates routable_devices")
                     
-                    device_data[curr_base_station] = create_entry_for_base_station((x_coor, y_coor), list())
+                    device_data[curr_base_station] = \
+                        create_entry_for_base_station((x_coor, y_coor), list())
                     self.global_id_inc += 1
                     
                     # For the transimssion radius of a base station,
@@ -108,8 +111,11 @@ class Grid:
                                         ("0" if 0 < self.global_id_inc < 10 else "") + 
                                         str(self.global_id_inc))
                                     self.grid[y_coor][x_coor] = curr_routable_device
-                                    create_routable_device_data = namedtuple("RoutableDevice", "routable_device_name coordinates")
-                                    curr_device = create_routable_device_data(curr_routable_device, (x_coor, y_coor,))
+                                    create_routable_device_data = namedtuple("RoutableDevice",
+                                            "routable_device_name coordinates")
+                                    curr_device = \
+                                        create_routable_device_data(curr_routable_device,
+                                                                   (x_coor, y_coor,))
                                     device_data[curr_base_station].routable_devices.append(curr_device)
                                     self.global_id_inc += 1
                                     break
