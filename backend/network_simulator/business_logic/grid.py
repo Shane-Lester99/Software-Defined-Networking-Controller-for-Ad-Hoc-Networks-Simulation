@@ -7,15 +7,18 @@ class Grid:
     
     DIMENSIONS = 10
     NUM_CHANNELS = 5
-    EMPTY_SPACE = "__"
+    EMPTY_SPACE = "___"
     BASE_STATION_ROOT = "B"
     ROUTABLE_DEVICE_ROOT = "R"
     NON_ROUTABLE_DEVICE_ROOT = "H"
+    BASE_STATION_TRANSMISSION_RADIUS = 2
+    DEVICE_TRANSMISSION_RADIUS = 1
     
     def __init__(self, num_base_stations, num_devices):
         """
         Will Generate a grid of size 10 * 10 as an array of arrays
         """
+        # TODO: Add decorator for input validation: 1 to 5 base stations and 1-10 routable devices
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] for _ in range(self.DIMENSIONS)]
         self._add_devices(num_base_stations, num_devices)
@@ -27,14 +30,37 @@ class Grid:
         return repr_str
         
     def _add_devices(self, num_base_stations, num_devices):
-        for _ in range(num_base_stations):
-            while True:
-                x_coor = random.randint(1,10) - 1
-                y_coor = random.randint(1, 10) - 1
-                if self.grid[x_coor][y_coor] == self.EMPTY_SPACE:
-                    self.grid[x_coor][y_coor] = self.BASE_STATION_ROOT + str(self.global_id_inc)
-                    self.global_id_inc += 1
-                    break
+        def add_base_stations(how_many):
+            def scan_for_free_space(x_coor, y_coor):
+                """
+                Scans the transmission radius self.BASE_STATION_TRANSMISSION_RADIUS to
+                make sure that the base stations are far enough apart
+                """
+                return self.grid[x_coor][y_coor] == self.EMPTY_SPACE
+            for _ in range(how_many):
+                while True:
+                    x_coor = random.randint(1,10) - 1
+                    y_coor = random.randint(1, 10) - 1
+                    if scan_for_free_space(x_coor, y_coor):
+                        self.grid[x_coor][y_coor] = (self.BASE_STATION_ROOT + 
+                                                     ("0" if 0 < self.global_id_inc < 10 else "") + 
+                                                     str(self.global_id_inc))
+                        self.global_id_inc += 1
+                        break
+        add_base_stations(num_base_stations)
+#        def find_free_space_and_add(device_name, how_many):
+#            for _ in range(how_many):
+#                while True:
+#                    x_coor = random.randint(1,10) - 1
+#                    y_coor = random.randint(1, 10) - 1
+#                    if self.grid[x_coor][y_coor] == self.EMPTY_SPACE:
+#                        self.grid[x_coor][y_coor] = (device_name + 
+#                                                     ("0" if 0 < self.global_id_inc < 10 else "") + 
+#                                                     str(self.global_id_inc))
+#                        self.global_id_inc += 1
+#                        break
+#        find_free_space_and_add(self.BASE_STATION_ROOT, num_base_stations)
+        #find_free_space_and_add(self.ROUTABLE_DEVICE_ROOT, num_devices)
         
                     
                     
