@@ -25,7 +25,8 @@ class Grid:
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
                       for _ in range(self.DIMENSIONS)]
-        self._add_devices(num_base_stations, num_devices)
+        # Map of base stations to there devices and the coordinate of that device
+        self.device_data = self._add_devices(num_base_stations, num_devices)
         
     def __repr__(self):
         repr_str = ""
@@ -45,7 +46,7 @@ class Grid:
                                       self.DIMENSIONS - 1
                                       if x > self.DIMENSIONS - 1
                                       else x)
-        create_bounds = namedtuple("bounds", "x0 x1 y0 y1")
+        create_bounds = namedtuple("Bounds", "x0 x1 y0 y1")
         boundaries = create_bounds(check_and_fix_lower_bounds(y_coor -
                                     self.TRANSMISSION_RADIUS),
                                    check_and_fix_upper_bounds(y_coor +
@@ -66,11 +67,14 @@ class Grid:
         """
         # TODO: Refactor this line to work with all inputs
         devices_per_base_station = int(num_devices / num_base_stations)
+        device_data = {}
         # Add in base stations
         for _ in range(num_base_stations):
             while True:
+                
                 x_coor = random.randint(1,10) - 1
                 y_coor = random.randint(1, 10) - 1
+                
                 if self.grid[y_coor][x_coor] != self.EMPTY_SPACE:
                     continue
                 
@@ -78,33 +82,46 @@ class Grid:
                 self._scan_area_around_base_station_for_placement(y_coor, x_coor)
                 
                 if is_space_free:
-                    self.grid[y_coor][x_coor] = \
+                    curr_base_station = \
                         (self.BASE_STATION_ROOT + 
                         ("0" if 0 < self.global_id_inc < 10 else "") + 
                         str(self.global_id_inc))
+                    self.grid[y_coor][x_coor] = curr_base_station
+                    create_entry_for_base_station = namedtuple("BaseStationEntry", "base_station_coordinates routable_devices")
+                    
+                    device_data[curr_base_station] = create_entry_for_base_station((x_coor, y_coor), list())
                     self.global_id_inc += 1
                     
                     # For the transimssion radius of a base station,
                     # add its associated user devices
                     for _ in range(devices_per_base_station):
+                        
                         while True:
+                            
                             x_coor = random.randint(1,10) - 1
                             y_coor = random.randint(1, 10) - 1
+                            
                             if (self.grid[y_coor][x_coor] == self.EMPTY_SPACE
                                 and base_station_boundaries.x0 
                                     <= x_coor <= base_station_boundaries.x1
                                 and base_station_boundaries.y0 
                                     <= y_coor <= base_station_boundaries.y1):
-                                    self.grid[y_coor][x_coor] = \
-                                    (self.ROUTABLE_DEVICE_ROOT + 
-                                    ("0" if 0 < self.global_id_inc < 10 else "") + 
-                                    str(self.global_id_inc))
+                                    curr_routable_device = \
+                                        (self.ROUTABLE_DEVICE_ROOT + 
+                                        ("0" if 0 < self.global_id_inc < 10 else "") + 
+                                        str(self.global_id_inc))
+                                    self.grid[y_coor][x_coor] = curr_routable_device
+                                    create_routable_device_data = namedtuple("RoutableDevice", "routable_device_name coordinates")
+                                    curr_device = create_routable_device_data(curr_routable_device, (x_coor, y_coor,))
+                                    device_data[curr_base_station].routable_devices.append(curr_device)
                                     self.global_id_inc += 1
                                     break
                     break
+        return device_data
             
 if __name__ == "__main__":
     # TODO: As is we need to have the number of devices evenly divide the
     # number of base stations
-    x = Grid(4, 12)
+    x = Grid(2, 4)
     print(x)
+    print(x.device_data)
