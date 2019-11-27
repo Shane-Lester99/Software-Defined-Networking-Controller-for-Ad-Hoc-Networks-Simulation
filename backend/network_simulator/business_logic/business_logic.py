@@ -1,4 +1,13 @@
 import grid
+import graph
 
-class BusinessLogic:
-    main_grid = grid.Grid(3, 10)
+#class NetworkSimulationEntryPoint:
+#    
+#    def __init__(self, num_base_stations, num_devices):
+#        = grid.Grid(3, 6)
+#        main_graph = graph.RoutingSystemMasterGraph(main_grid)
+
+if __name__ == "__main__":
+    main_grid = grid.Grid(3,6)
+    print(main_grid)
+    main_graph = graph.RoutingSystemMasterGraph(main_grid.device_data)

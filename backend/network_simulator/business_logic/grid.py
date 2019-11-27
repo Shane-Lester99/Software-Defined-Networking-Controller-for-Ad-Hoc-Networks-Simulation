@@ -1,13 +1,9 @@
-from networkx import nx
-import math
 import random
-import base_station
 from collections import namedtuple
 
 class Grid:
     
     DIMENSIONS = 10
-    NUM_CHANNELS = 5
     EMPTY_SPACE = "___"
     BASE_STATION_ROOT = "B"
     ROUTABLE_DEVICE_ROOT = "R"
@@ -123,5 +119,6 @@ class Grid:
 if __name__ == "__main__":
     # TODO: As is we need to have the number of devices evenly divide the
     # number of base stations
-    x = Grid(2, 4)
+    x = Grid(3, 6)
     print(x)
+    print(x.device_data)
