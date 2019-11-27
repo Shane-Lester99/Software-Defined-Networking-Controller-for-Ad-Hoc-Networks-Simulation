@@ -55,13 +55,14 @@ class Grid:
             for i in range(boundaries.y0, boundaries.y1 + 1):
                 for j in range(boundaries.x0, boundaries.x1 + 1):
                     if self.grid[j][i] != self.EMPTY_SPACE:
-                        return False
-            return True
+                        return False, boundaries
+            return True, boundaries
         for _ in range(num_base_stations):
             while True:
                 x_coor = random.randint(1,10) - 1
                 y_coor = random.randint(1, 10) - 1
-                if scan_for_free_space(y_coor, x_coor, self.TRANSMISSION_RADIUS):
+                is_space_free, base_station_boundaries = scan_for_free_space(y_coor, x_coor, self.TRANSMISSION_RADIUS)
+                if is_space_free:
                     self.grid[y_coor][x_coor] = (self.BASE_STATION_ROOT + 
                                                  ("0" if 0 < self.global_id_inc < 10 else "") + 
                                                  str(self.global_id_inc))
