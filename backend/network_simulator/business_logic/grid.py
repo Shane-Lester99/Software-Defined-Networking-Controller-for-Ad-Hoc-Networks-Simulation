@@ -25,7 +25,6 @@ class Grid:
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
                       for _ in range(self.DIMENSIONS)]
-        # Map of base stations to there devices and the coordinate of that device
         self.device_data = self._add_devices(num_base_stations, num_devices)
         
     def __repr__(self):
@@ -63,7 +62,9 @@ class Grid:
         
     def _add_devices(self, num_base_stations, num_devices):
         """
-        Adds all the user devices and base station devices to the grid
+        Adds all the user devices and base station devices to the grid and
+        generates data structure (map[string]string) of base stations to 
+        all there routable devices
         """
         # TODO: Refactor this line to work with all inputs
         devices_per_base_station = int(num_devices / num_base_stations)
@@ -124,4 +125,3 @@ if __name__ == "__main__":
     # number of base stations
     x = Grid(2, 4)
     print(x)
-    print(x.device_data)
