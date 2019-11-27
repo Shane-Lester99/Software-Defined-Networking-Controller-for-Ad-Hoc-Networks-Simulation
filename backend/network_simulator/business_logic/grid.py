@@ -7,18 +7,39 @@ class Grid:
     
     DIMENSIONS = 10
     NUM_CHANNELS = 5
+    EMPTY_SPACE = "__"
+    BASE_STATION_ROOT = "B"
+    ROUTABLE_DEVICE_ROOT = "R"
+    NON_ROUTABLE_DEVICE_ROOT = "H"
     
-    def __init__(self):
+    def __init__(self, num_base_stations, num_devices):
         """
         Will Generate a grid of size 10 * 10 as an array of arrays
         """
-        self.grid = [["_" for _ in range(self.DIMENSIONS)]for _ in range(self.DIMENSIONS)]
+        self.global_id_inc = 1
+        self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] for _ in range(self.DIMENSIONS)]
+        self._add_devices(num_base_stations, num_devices)
         
     def __repr__(self):
         repr_str = ""
         for row in self.grid:
             repr_str = repr_str + " ".join(row) + "\n"
         return repr_str
+        
+    def _add_devices(self, num_base_stations, num_devices):
+        for _ in range(num_base_stations):
+            while True:
+                x_coor = random.randint(1,10) - 1
+                y_coor = random.randint(1, 10) - 1
+                if self.grid[x_coor][y_coor] == self.EMPTY_SPACE:
+                    self.grid[x_coor][y_coor] = self.BASE_STATION_ROOT + str(self.global_id_inc)
+                    self.global_id_inc += 1
+                    break
+        
+                    
+                    
+                
+            
     
 #    def __init__(self, num_base_stations, num_devices):
 #        self.grid = [[None for _ in range(self.DIMENSIONS)] for _ in range(self.DIMENSIONS)]
@@ -96,5 +117,5 @@ class Grid:
 #            
             
 if __name__ == "__main__":
-    x = Grid()
+    x = Grid(3, 10)
     print(x)
