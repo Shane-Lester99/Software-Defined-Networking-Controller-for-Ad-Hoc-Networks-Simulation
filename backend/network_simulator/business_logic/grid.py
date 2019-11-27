@@ -2,6 +2,7 @@ from networkx import nx
 import math
 import random
 import base_station
+from collections import namedtuple
 
 class Grid:
     
@@ -31,18 +32,55 @@ class Grid:
         
     def _add_devices(self, num_base_stations, num_devices):
         def add_base_stations(how_many):
-            def scan_for_free_space(x_coor, y_coor):
+            def scan_for_free_space(x_coor, y_coor, radius):
                 """
                 Scans the transmission radius self.BASE_STATION_TRANSMISSION_RADIUS to
                 make sure that the base stations are far enough apart
                 """
-                return self.grid[x_coor][y_coor] == self.EMPTY_SPACE
+                # Board bounds can't be below 0
+                check_and_fix_lower_bounds = lambda x: 0 if x < 0 else x 
+                # Board bounds can't be below self.DIMENSIONS-1
+                check_and_fix_upper_bounds = lambda x: self.DIMENSIONS - 1 if x > self.DIMENSIONS - 1 else x
+                create_bounds = namedtuple("bounds", "y0 y1 x0 x1")
+                
+                boundaries = create_bounds(check_and_fix_lower_bounds(y_coor - radius),
+                                           check_and_fix_upper_bounds(y_coor + radius),
+                                           check_and_fix_lower_bounds(x_coor - radius),
+                                           check_and_fix_upper_bounds(x_coor + radius))
+                
+                # print("Starting new base station")
+                for i in range(boundaries.y0, boundaries.y1 + 1):
+                    for j in range(boundaries.x0, boundaries.x1 + 1):
+                        if self.grid[j][i] != self.EMPTY_SPACE:
+                            return False
+                return True
+                
+#                print(boundaries)
+#                boundary_0_0 = check_and_fix_lower_bounds(y_coor - radius), check_and_fix_lower_bounds(x_coor - radius)
+#                boundary_X_0 = check_and_fix_upper_bounds(y_coor + radius), check_and_fix_lower_bounds(x_coor - radius)
+#                boundary_0_Y = check_and_fix_lower_bounds(y_coor - radius), check_and_fix_upper_bounds(x_coor + radius)
+#                boundary_X_Y = check_and_fix_upper_bounds(y_coor + radius), check_and_fix_upper_bounds(x_coor + radius)
+##                for i in range(boundary0_0[0], boundary_X_0[0]):
+##                    for j in range(boundary0_0[])
+#                print(boundary_0_0)
+#                print(boundary_X_0)
+#                print(boundary_0_Y)
+#                print(boundary_X_Y)
+##                for i in range(boundary_0_0, boundary_X_0):
+#                    for j in range(boundary_0_Y, boundary_X_Y):
+#                        print(i, j)
+                # return self.grid[x_coor][y_coor] == self.EMPTY_SPACE
             for _ in range(how_many):
                 while True:
+                    # *** Note about array indexing *** :
+                    # With array indexing, the first index defines which array (y axis) and the second which 
+                    # value in the array we use (x axis). So we need to reverse the indices when choosing values on grid.
+                    # Also the array 0,0 is at the top left side of __repr__ grid and 9, 9 is bottom right of grid
+                    # The create_bounds namedtuple will treat the x coordinate and y coordinate as we would intuitively expect
                     x_coor = random.randint(1,10) - 1
                     y_coor = random.randint(1, 10) - 1
-                    if scan_for_free_space(x_coor, y_coor):
-                        self.grid[x_coor][y_coor] = (self.BASE_STATION_ROOT + 
+                    if scan_for_free_space(y_coor, x_coor, self.BASE_STATION_TRANSMISSION_RADIUS):
+                        self.grid[y_coor][x_coor] = (self.BASE_STATION_ROOT + 
                                                      ("0" if 0 < self.global_id_inc < 10 else "") + 
                                                      str(self.global_id_inc))
                         self.global_id_inc += 1
