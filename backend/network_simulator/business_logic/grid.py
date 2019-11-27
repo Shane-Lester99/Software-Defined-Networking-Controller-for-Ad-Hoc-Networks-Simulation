@@ -11,7 +11,6 @@ class Grid:
     EMPTY_SPACE = "___"
     BASE_STATION_ROOT = "B"
     ROUTABLE_DEVICE_ROOT = "R"
-    NON_ROUTABLE_DEVICE_ROOT = "H"
     TRANSMISSION_RADIUS = 2
     
     def __init__(self, num_base_stations, num_devices):
@@ -40,13 +39,13 @@ class Grid:
         check_and_fix_lower_bounds = lambda x: 0 if x < 0 else x 
         # Board bounds can't be below self.DIMENSIONS-1
         check_and_fix_upper_bounds = lambda x: self.DIMENSIONS - 1 if x > self.DIMENSIONS - 1 else x
-        create_bounds = namedtuple("bounds", "y0 y1 x0 x1")
+        create_bounds = namedtuple("bounds", "x0 x1 y0 y1")
         boundaries = create_bounds(check_and_fix_lower_bounds(y_coor - self.TRANSMISSION_RADIUS),
                                    check_and_fix_upper_bounds(y_coor + self.TRANSMISSION_RADIUS),
                                    check_and_fix_lower_bounds(x_coor - self.TRANSMISSION_RADIUS),
                                    check_and_fix_upper_bounds(x_coor + self.TRANSMISSION_RADIUS))
-        for i in range(boundaries.y0, boundaries.y1 + 1):
-            for j in range(boundaries.x0, boundaries.x1 + 1):
+        for i in range(boundaries.x0, boundaries.x1 + 1):
+            for j in range(boundaries.y0, boundaries.y1 + 1):
                 if self.grid[j][i][0] == self.BASE_STATION_ROOT:
                     return False, boundaries
         return True, boundaries
@@ -74,8 +73,8 @@ class Grid:
                             x_coor = random.randint(1,10) - 1
                             y_coor = random.randint(1, 10) - 1
                             if (self.grid[y_coor][x_coor] == self.EMPTY_SPACE
-                                and base_station_boundaries.y0 <= x_coor <= base_station_boundaries.y1
-                                and base_station_boundaries.x0 <= y_coor <= base_station_boundaries.x1):
+                                and base_station_boundaries.x0 <= x_coor <= base_station_boundaries.x1
+                                and base_station_boundaries.y0 <= y_coor <= base_station_boundaries.y1):
                                     self.grid[y_coor][x_coor] = (self.ROUTABLE_DEVICE_ROOT + 
                                                                 ("0" if 0 < self.global_id_inc < 10 else "") + 
                                                                 str(self.global_id_inc))
@@ -84,5 +83,5 @@ class Grid:
                     break
             
 if __name__ == "__main__":
-    x = Grid(6, 12)
+    x = Grid(5, 25)
     print(x)
