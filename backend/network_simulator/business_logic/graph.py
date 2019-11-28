@@ -8,13 +8,13 @@ class RoutingSystemMasterGraph:
         # where the metadata contains the base station, base station coord, and the
         # router coordinates, and the dictionary is the edges connected to the device.
         # The channel represents the weight of the edge
-        self.graph = self._generate_graph(base_station_map)
-        self.transmission_radus = transmission_radius
+        self._transmission_radius = transmission_radius
+        self._graph = self._generate_graph(base_station_map)
     
     def __repr__(self):
         repr_str = "***Graph of Network Routing System***\n"
-        for source_device_name, edges in self.graph.items():
-            bs_name = self.graph[source_device_name][0].base_station_name
+        for source_device_name, edges in self._graph.items():
+            bs_name = self._graph[source_device_name][0].base_station_name
             # Router is connected to base station -> ...
             repr_str = (repr_str + source_device_name
                 + " connected to {} -> ".format(bs_name))
@@ -66,7 +66,7 @@ class RoutingSystemMasterGraph:
         pass
     
     def _scan_area_for_connected_devices(self, coord_source, coord_dest):
-        return (True if abs(coord_source[0] - coord_dest[0]) <= 2 and
-                abs(coord_source[1] - coord_dest[1]) <= 2 else False)
+        return (True if abs(coord_source[0] - coord_dest[0]) <= self._transmission_radius and
+                abs(coord_source[1] - coord_dest[1]) <= self._transmission_radius else False)
     
     
