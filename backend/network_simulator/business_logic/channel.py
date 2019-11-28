@@ -20,7 +20,7 @@ class ChannelSystemNode:
         self.channel_system = [round(random.uniform(0, 1),4) for _ in range(self.AMOUNT_OF_CHANNELS)]
         
     def __repr__(self):
-        return "ChannelSystem(total_weight: {}, channels: {})".format(self.report_weight(), self.channel_system)
+        return "ChannelSystemNode(total_weight: {}, channels: {})".format(self.report_weight(), self.channel_system)
         
     def report_weight(self):
         return round(5 - sum(self.channel_system), 4)
