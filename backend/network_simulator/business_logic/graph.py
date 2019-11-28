@@ -4,6 +4,10 @@ from collections import namedtuple
 class RoutingSystemMasterGraph:
     
     def __init__(self, base_station_map, transmission_radius):
+        # Adj list is of form {device_name: (metadata, {some_connected_node: channel_node})}
+        # where the metadata contains the base station, base station coord, and the
+        # router coordinates, and the dictionary is the edges connected to the device.
+        # The channel represents the weight of the edge
         self.graph = self._generate_graph(base_station_map)
         self.transmission_radus = transmission_radius
     
@@ -19,10 +23,13 @@ class RoutingSystemMasterGraph:
                                                                   dest_device_name,
                                                                   channel.report_weight()) 
                 for (dest_device_name, channel) in edges[1].items()]) + "\n")
-                
         return repr_str
         
     def _generate_graph(self, base_station_map):
+        """
+        Generates the adjanency list used to model the graph for the network
+        routing system. 
+        """
         # Create adj list beginning structure of adj_list = {routable_name: 
         # RoutableDeviceEntry(base_station_name, base_station_coordinates,
         # routable_device_coordinated)}
@@ -59,6 +66,7 @@ class RoutingSystemMasterGraph:
         pass
     
     def _scan_area_for_connected_devices(self, coord_source, coord_dest):
-        return True
+        return (True if abs(coord_source[0] - coord_dest[0]) <= 2 and
+                abs(coord_source[1] - coord_dest[1]) <= 2 else False)
     
     
