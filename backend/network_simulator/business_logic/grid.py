@@ -24,7 +24,7 @@ class Grid:
         self.device_data = self._add_devices(num_base_stations, num_devices)
         
     def __repr__(self):
-        repr_str = ""
+        repr_str = "***Grid of Network Routing System***\n"
         for row in self.grid:
             repr_str = repr_str + " ".join(row) + "\n"
         return repr_str

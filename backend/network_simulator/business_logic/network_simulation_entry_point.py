@@ -10,4 +10,6 @@ import graph
 if __name__ == "__main__":
     main_grid = grid.Grid(3,6)
     print(main_grid)
-    main_graph = graph.RoutingSystemMasterGraph(main_grid.device_data)
+    main_graph = graph.RoutingSystemMasterGraph(main_grid.device_data,
+                                                main_grid.TRANSMISSION_RADIUS)
+    print(main_graph)
