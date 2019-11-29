@@ -12,15 +12,16 @@ class ChannelSystemNode:
     
     AMOUNT_OF_CHANNELS = 5
     
-    def __init__(self):
+    def __init__(self, channel_id):
         """
         Creates a channel system of size AMOUNT_OF_CHANNELS and assignes each
         channel a random variable from 0 to 1.
         """
+        self.c_id = channel_id
         self.channel_system = [round(random.uniform(0, 1),4) for _ in range(self.AMOUNT_OF_CHANNELS)]
         
     def __repr__(self):
-        return "ChannelSystemNode(total_weight: {}, channels: {})".format(self.report_weight(), self.channel_system)
+        return "ChannelSystemNode(id: {},total_weight: {}, channels: {})".format(self.c_id,self.report_weight(), self.channel_system)
         
     def report_weight(self):
         return round(5 - sum(self.channel_system), 4)
