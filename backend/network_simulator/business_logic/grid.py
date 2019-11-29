@@ -125,6 +125,6 @@ class Grid:
 if __name__ == "__main__":
     # TODO: As is we need to have the number of devices evenly divide the
     # number of base stations
-    x = Grid(3, 6)
+    x = Grid(2, 4)
     print(x)
     print(x.device_data)
