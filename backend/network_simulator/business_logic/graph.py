@@ -186,7 +186,7 @@ class RoutingSystemMasterGraph:
             Given two adjacent nodes, return there edge (which is a channel obj)
             """
             return self._graph[source][1][dest]
-        print(best_route)
+        results = list()
         output_stat_record = namedtuple("RouteData", "nodes channel channel_selection")
         prev_node = best_route.best_route[0]
         for next_node_id in range(1, len(best_route.best_route)):
@@ -198,8 +198,9 @@ class RoutingSystemMasterGraph:
             while not sel.had_success:
                 sel = chan.choose_channel_and_report_result()
                 curr_test.channel_selection.append(sel)
+            results.append(curr_test)
             prev_node = next_node
-        return curr_test
+        return results
     
     
     

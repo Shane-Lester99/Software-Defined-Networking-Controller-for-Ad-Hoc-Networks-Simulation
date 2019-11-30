@@ -26,7 +26,7 @@ def validate_grid_input(func):
         if 1 <= len(base_station_list) <= 9:
             for num_devices in base_station_list:
                 if not (1 <= num_devices <= 5):
-                    raise ValueError("Must have between 1 to 5 user devives")
+                    raise ValueError("Must have between 1 to 5 user devices per base station")
         else:
             raise ValueError("Must have between 1 to 9 base stations")
         func(*args, **kwargs)
