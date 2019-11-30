@@ -5,6 +5,9 @@ class NetworkSimulationEntryPoint:
     """
     Entry point of NetworkSimulation application. It provides an 
     interface over the application modules and returns the results as JSON.
+    It also allows for backend debugging with a CLI version of the application.
+    
+    To run the CLI version run the module from the main function
     """
     
     def __init__(self, base_station_list):
@@ -55,6 +58,10 @@ class NetworkSimulationEntryPoint:
 if __name__ == "__main__":
     # This will run a test so that the user can query from the command line to
     # debug the backend
-    bs_list = [5 for _ in range(9)]
+    print("This is the CLI version of the Network Routing Simulation.")
+    print("To set up the network topology, write a list of 1 to 9 numbers.")
+    print("Each number signifies how many user devices are associated with that base station.\n")
+    x = input("Please enter these numbers now as a single space seperated list:")
+    bs_list = [int(char) for char in x if char != " "]
     entry = NetworkSimulationEntryPoint(bs_list)
     entry.command_line_test_exp()
