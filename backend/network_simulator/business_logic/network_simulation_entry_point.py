@@ -8,9 +8,15 @@ import graph
 #        main_graph = graph.RoutingSystemMasterGraph(main_grid)
 
 if __name__ == "__main__":
-    main_grid = grid.Grid(2, 6)
+    inp = [2,2,3]
+    main_grid = grid.Grid(inp)
     print(main_grid)
     main_graph = graph.RoutingSystemMasterGraph(main_grid.device_data,
                                                 main_grid.TRANSMISSION_RADIUS)
     print(main_graph)
-    print(main_graph.find_shortest_path("R04", "R08"))
+    while True:
+        x = input("Please specify query path")
+        source, dest = x[:3], x[4:]
+        print(source, dest)
+        print(main_graph.query_for_optimal_route(source, dest))
+    #print(main_graph.query_for_optimal_route("R04", "R08"))

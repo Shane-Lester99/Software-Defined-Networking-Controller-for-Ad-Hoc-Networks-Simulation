@@ -19,14 +19,16 @@ class ChannelSystemNode:
         """
         self.c_id = channel_id
         self.channel_system = [round(random.uniform(0, 1),4) for _ in range(self.AMOUNT_OF_CHANNELS)]
+        self.channel_weight = round(5 - sum(self.channel_system), 4)
         
     def __repr__(self):
-        return "ChannelSystemNode(id: {},total_weight: {}, channels: {})".format(self.c_id,self.report_weight(), self.channel_system)
-        
-    def report_weight(self):
-        return round(5 - sum(self.channel_system), 4)
+        return "ChannelSystemNode(id: {},total_weight: {}, channels: {})".format(self.c_id,self.channel_weight, self.channel_system)
         
     def choose_channel_and_report_result(self):
+        """
+        Randomly chooses a channel and reports whether the packet was successfully
+        transmitted or not.
+        """
         channel_choice = random.randint(0, self.AMOUNT_OF_CHANNELS-1)
         prob_of_success = self.channel_system[channel_choice]
         had_success = random.uniform(0, 1) < prob_of_success
@@ -35,7 +37,7 @@ class ChannelSystemNode:
         
         
 if __name__ == "__main__":
-    c = ChannelSystemNode()
+    c = ChannelSystemNode(1)
     print(c)
     for _ in range(5):
         print(c.choose_channel_and_report_result())

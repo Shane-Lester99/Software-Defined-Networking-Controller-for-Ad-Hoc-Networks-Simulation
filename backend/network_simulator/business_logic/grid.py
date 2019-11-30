@@ -15,11 +15,6 @@ class Grid:
         """
         Will Generate a grid of size 10 * 10 as an array of arrays
         """
-        # TODO: Add decorator for input validation: 1 to 9 base stations and
-        # base_stations to 20?? routable devices
-        # TODO: Make sure that the global_id never reaches near 100. Make sure
-        # to test on tons of values to see what
-        # works consistently to define input bounds
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
                       for _ in range(self.DIMENSIONS)]
@@ -37,9 +32,7 @@ class Grid:
         generates data structure (map[string]string) of base stations to 
         all there routable devices
         """
-        # TODO: Refactor this line to work with all inputs
         device_data = {}
-        # Add in base stations
         for bs_index in range(len(base_station_list)):
             while True:
                 
@@ -129,11 +122,7 @@ class Grid:
         
             
 if __name__ == "__main__":
-    # TODO: As is we need to have the number of devices evenly divide the
-    # number of base stations
-    #inp = [5 for _ in range(10)]
-    #print(inp, len(inp))
-    inp = [5 for _ in range(9)]
+    inp = [3 for _ in range(4)]
     x = Grid(inp)
     print(x)
     print(x.device_data)
