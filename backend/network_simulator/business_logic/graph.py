@@ -2,6 +2,8 @@ import channel
 from collections import namedtuple
 from priority_queue import PriorityQueue
 
+create_best_route = namedtuple("BestRoute", "cost best_route")
+
 class RoutingSystemMasterGraph:
     
     def __init__(self, base_station_map, transmission_radius):
@@ -39,18 +41,18 @@ class RoutingSystemMasterGraph:
         of the graph. We can then return a data structure containing all the 
         stats from this run and save it in our system stats.
         """
-#        reachable_nodes_set = self._bfs(device_name_source)
-#        if device_name_dest not in reachable_nodes_set:
-#            return None
-#        graph_subset = ({key: value for (key, value) in self._graph.items()
-#                          if key in reachable_nodes_set})
+        reachable_nodes_set = self._bfs(device_name_source)
+        if device_name_dest not in reachable_nodes_set:
+            return create_best_route(-1, None)
+        graph_subset = ({key: value for (key, value) in self._graph.items()
+                          if key in reachable_nodes_set})
         # If we have paths that exist for this query, then we will use this
         # subset of the graph for our shortest path algorithm
-        # print("Reachable set: ", reachable_nodes_set)
+         
+        # This will feed our shortest path algorithm only the needed graph subset
+        # Which will make dijkstra more straightfoward to implement
         
-        
-        graph = self._graph.copy()
-        best_route = self._calc_shortest_path(graph,
+        best_route = self._calc_shortest_path(graph_subset,
                                               device_name_source,
                                               device_name_dest)
         if best_route.best_route:
@@ -58,25 +60,6 @@ class RoutingSystemMasterGraph:
             self.sys_stats.append(output_stats)
             return output_stats
         return []
-        
-        
-#        DISTANCE_KEY = "shortest_distance_from_source"
-#        PREVIOUS_VERTEX_KEY = "previous_vertex"
-#        distance_from_start = 0
-#        shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
-#            PREVIOUS_VERTEX_KEY: None} for device_names in self._graph.keys()})
-#        shortest_path_info[device_name_source][DISTANCE_KEY] = 0
-#        for device_entries in self._graph.values():
-#            device_data = device_entries[1]
-#            for device_name, channel_node in device_data.items():
-#                print(device_name, channel_node.report_weight(), end='\n\n')
-#                
-                
-        
-        # print('here')
-        # print([value[1], value[1].total_weight for value in self._graph.values()])
-        # pq = PriorityQueue([(channel_weight, )])
-        
 
     def output_system_stats(self):
         return self.sys_stats
@@ -124,6 +107,8 @@ class RoutingSystemMasterGraph:
         Runs breadth first search on a graph node to see all reachable nodes.
         Will then return a set with all the reachabe nodes
         """
+        if node not in self._graph:
+            return set()
         reachable_nodes = set()
         visited = {node_name: False for node_name in self._graph.keys()}
         queue = [node]
@@ -140,13 +125,13 @@ class RoutingSystemMasterGraph:
     def _calc_shortest_path(self, graph_subset, source_node, dest_node):
         """
         Runs the shortest path algorithm on a graph subset. Outputs a list of the
-        best path.
+        best path. Assume our graph subset is all nodes reachable from our source and
+        our destination node is one of them
         """
         def create_input_for_pq(node_1, node_2):
             return (graph_subset[node_1][1][node_2].channel_weight, node_2)
-        # First create the data structure to record our results
-        # map{vertex: {short_dist_from_source, prev_vert}}
-        # print("Init data structure")
+        # Creating the initial data structure of {node: {distance_from_source: <float>,
+        # prev_node: <str>}} and other ds for dijkstra
         DISTANCE_KEY = "shortest_distance_from_source"
         PREVIOUS_VERTEX_KEY = "previous_vertex"
         shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
@@ -154,16 +139,12 @@ class RoutingSystemMasterGraph:
         visited = {key:False for key in graph_subset.keys()}
         shortest_path_info[source_node][DISTANCE_KEY] = 0
         visited[source_node] = True
-        # print("Graph subset: ", graph_subset)
-        # print("DS:", shortest_path_info)
-        # print("Visit:", visited)
+        # Begin dijkstra
         pq = PriorityQueue()
         pq.add_task((0.0, source_node))
-        # print("Testing new bfs for shortest path")
         while pq:
             new_node = pq.pop_task()[1]
             visited[new_node] = True
-            print(new_node)
             for connected_node in graph_subset[new_node][1]:
                 if not visited[connected_node]:
                     pq_input = create_input_for_pq(new_node, connected_node)
@@ -172,28 +153,22 @@ class RoutingSystemMasterGraph:
                         shortest_path_info[connected_node][DISTANCE_KEY] = new_dist
                         shortest_path_info[connected_node][PREVIOUS_VERTEX_KEY] = new_node
                     pq.add_task(pq_input)
-                    #visited[connected_node] = True
-        # print(shortest_path_info)
-        # print("Shortest path info:",shortest_path_info)
-        # We need to create a while loop with a Priority Queue with values
-        # (channel_weight, node_label)
-        create_best_route = namedtuple("BestRoute", "cost best_route")
-        # Here we backtrack to see if the shortest path exists
+        # Checks if ther is an optimal path (There always should be one)
         if shortest_path_info[dest_node][PREVIOUS_VERTEX_KEY] != None:
             best_route = create_best_route(
                           shortest_path_info[dest_node][DISTANCE_KEY],
                           [dest_node]
                         )
-                # TODO: write code...]}
             curr_node = shortest_path_info[dest_node][PREVIOUS_VERTEX_KEY]
             while True:
-                # print(curr_node)
                 best_route.best_route.append(curr_node)
                 if curr_node == source_node:
                     break
                 curr_node = shortest_path_info[curr_node][PREVIOUS_VERTEX_KEY]
             best_route.best_route.reverse()
         else:
+            # In case of bugs or unexpected behavior, this will make it easier to
+            # debug. This should never execute
             best_route = create_best_route(-1, None)
         return best_route
     
