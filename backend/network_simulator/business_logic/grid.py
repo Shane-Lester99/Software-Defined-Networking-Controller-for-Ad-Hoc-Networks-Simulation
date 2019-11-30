@@ -10,8 +10,8 @@ class Grid:
     ROUTABLE_DEVICE_ROOT = "R"
     TRANSMISSION_RADIUS = 2
     
-    # @validate_grid_input
-    def __init__(self, num_base_stations, num_devices):
+    @validate_grid_input
+    def __init__(self, base_station_list):
         """
         Will Generate a grid of size 10 * 10 as an array of arrays
         """
@@ -23,7 +23,7 @@ class Grid:
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
                       for _ in range(self.DIMENSIONS)]
-        self.device_data = self._add_devices(num_base_stations, num_devices)
+        self.device_data = self._add_devices(base_station_list)
         
     def __repr__(self):
         repr_str = "***Grid of Network Routing System***\n"
@@ -31,17 +31,16 @@ class Grid:
             repr_str = repr_str + " ".join(row) + "\n"
         return repr_str
         
-    def _add_devices(self, num_base_stations, num_devices):
+    def _add_devices(self, base_station_list):
         """
         Adds all the user devices and base station devices to the grid and
         generates data structure (map[string]string) of base stations to 
         all there routable devices
         """
         # TODO: Refactor this line to work with all inputs
-        devices_per_base_station = int(num_devices / num_base_stations)
         device_data = {}
         # Add in base stations
-        for _ in range(num_base_stations):
+        for bs_index in range(len(base_station_list)):
             while True:
                 
                 x_coor = random.randint(1,10) - 1
@@ -62,7 +61,7 @@ class Grid:
                     
                     device_data[curr_base_station] = \
                         create_entry_for_base_station((x_coor, y_coor), list())
-                    for _ in range(devices_per_base_station):
+                    for _ in range(base_station_list[bs_index]):
                         
                         while True:
                             
@@ -132,6 +131,9 @@ class Grid:
 if __name__ == "__main__":
     # TODO: As is we need to have the number of devices evenly divide the
     # number of base stations
-    x = Grid(9, 45)
+    #inp = [5 for _ in range(10)]
+    #print(inp, len(inp))
+    inp = [5 for _ in range(9)]
+    x = Grid(inp)
     print(x)
     print(x.device_data)
