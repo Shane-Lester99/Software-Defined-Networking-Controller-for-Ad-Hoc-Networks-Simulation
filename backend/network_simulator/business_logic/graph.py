@@ -12,7 +12,7 @@ class RoutingSystemMasterGraph:
         self._global_channel_id = 1
         self._transmission_radius = transmission_radius
         self._graph = self._generate_graph(base_station_map)
-        self.syst_stats = list()
+        self.sys_stats = list()
     
     def __repr__(self):
         repr_str = "***Graph of Network Routing System***\n"
@@ -25,10 +25,57 @@ class RoutingSystemMasterGraph:
             repr_str = (repr_str + str(["(DeviceName:{}, ChannelId:{}, ChannelWeight:{})".format(
                                                                   dest_device_name,
                                                                   channel.c_id,
-                                                                  channel.report_weight()) 
+                                                                  channel.channel_weight) 
                 for (dest_device_name, channel) in edges[1].items()]) + "\n")
         return repr_str
         
+    
+    
+    def query_for_optimal_route(self, device_name_source, device_name_dest):
+        """
+        Finds the shortest path between the source and destination by first
+        running a breadth first search to create a set of all the reachable nodes.
+        If the destination is there we can run the shortest path on this subset
+        of the graph. We can then return a data structure containing all the 
+        stats from this run and save it in our system stats.
+        """
+        reachable_nodes_set = self._bfs(device_name_source)
+        if device_name_dest not in reachable_nodes_set:
+            return None
+        graph_subset = ({key: value for (key, value) in self._graph.items()
+                          if key in reachable_nodes_set})
+        # If we have paths that exist for this query, then we will use this
+        # subset of the graph for our shortest path algorithm
+        print("Reachable set: ", reachable_nodes_set)
+        best_route = self._calc_shortest_path(graph_subset,
+                                              device_name_source,
+                                              device_name_dest)
+        output_stats = self._run_simulation(best_route)
+        self.sys_stats.append(output_stats)
+        return output_stats
+        
+        
+#        DISTANCE_KEY = "shortest_distance_from_source"
+#        PREVIOUS_VERTEX_KEY = "previous_vertex"
+#        distance_from_start = 0
+#        shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
+#            PREVIOUS_VERTEX_KEY: None} for device_names in self._graph.keys()})
+#        shortest_path_info[device_name_source][DISTANCE_KEY] = 0
+#        for device_entries in self._graph.values():
+#            device_data = device_entries[1]
+#            for device_name, channel_node in device_data.items():
+#                print(device_name, channel_node.report_weight(), end='\n\n')
+#                
+                
+        
+        # print('here')
+        # print([value[1], value[1].total_weight for value in self._graph.values()])
+        # pq = PriorityQueue([(channel_weight, )])
+        
+
+    def output_system_stats(self):
+        return self.sys_stats
+    
     def _generate_graph(self, base_station_map):
         """
         Generates the adjanency list used to model the graph for the network
@@ -62,52 +109,7 @@ class RoutingSystemMasterGraph:
                         adj_list[router_name_source][1][router_name_destination] = device_channel
                         adj_list[router_name_destination][1][router_name_source] = device_channel
         return adj_list  
-    
-    
-    def query_optimal_route(self, device_name_source, device_name_dest):
-        """
-        Finds the shortest path between the source and destination by first
-        running a breadth first search to create a set of all the reachable nodes.
-        If the destination is there we can run the shortest path on this subset
-        of the graph. We can then return a data structure containing all the 
-        stats from this run and save it in our system stats.
-        """
-        reachable_nodes_set = self._bfs(device_name_source)
-        if device_name_dest not in reachable_nodes_set:
-            return None
-        )graph_subset = ({key: value for (key, value) in self._graph.items()
-                          if key in reachable_nodes_set}
-        # If we have paths that exist for this query, then we will use this
-        # subset of the graph for our shortest path algorithm
-        best_route = self._calc_shortest_path(graph_subset,
-                                              device_name_source,
-                                              device_name_dest)
-        output_stats = self._run_simulation(best_route)
-        self.sys_stats.append(output_stats)
-        return output_stats
         
-        
-#        DISTANCE_KEY = "shortest_distance_from_source"
-#        PREVIOUS_VERTEX_KEY = "previous_vertex"
-#        distance_from_start = 0
-#        shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
-#            PREVIOUS_VERTEX_KEY: None} for device_names in self._graph.keys()})
-#        shortest_path_info[device_name_source][DISTANCE_KEY] = 0
-#        for device_entries in self._graph.values():
-#            device_data = device_entries[1]
-#            for device_name, channel_node in device_data.items():
-#                print(device_name, channel_node.report_weight(), end='\n\n')
-#                
-                
-        
-        # print('here')
-        # print([value[1], value[1].total_weight for value in self._graph.values()])
-        # pq = PriorityQueue([(channel_weight, )])
-        
-
-    def output_system_stats(self):
-        return self.sys_stats
-    
     def _scan_area_for_connected_devices(self, coord_source, coord_dest):
         return (True if abs(coord_source[0] - coord_dest[0]) <= self._transmission_radius and
                 abs(coord_source[1] - coord_dest[1]) <= self._transmission_radius else False)
@@ -123,25 +125,60 @@ class RoutingSystemMasterGraph:
         visited[node] = True
         while queue:
             curr_node = queue.pop()
-            if curr_node != node:
-                reachable_nodes.add(curr_node)
+            reachable_nodes.add(curr_node)
             for pot_new_node in self._graph[curr_node][1]:
                 if visited[pot_new_node] == False:
                     queue.append(pot_new_node)
                     visited[pot_new_node] = True
         return reachable_nodes 
         
-    def _calc_shortest_path(self, source_node, dest_node, graph_subset):
+    def _calc_shortest_path(self, graph_subset, source_node, dest_node):
         """
         Runs the shortest path algorithm on a graph subset. Outputs a list of the
         best path. Assume that at least one route exists from source to destination
         """
+        def create_input_for_pq(node_1, node_2):
+            return (graph_subset[node_1][1][node_2].channel_weight, node_2)
+        # First create the data structure to record our results
+        # map{vertex: {short_dist_from_source, prev_vert}}
+        print("Init data structure")
+        DISTANCE_KEY = "shortest_distance_from_source"
+        PREVIOUS_VERTEX_KEY = "previous_vertex"
+        shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
+            PREVIOUS_VERTEX_KEY: None} for device_names in graph_subset.keys()})
+        visited = {key:False for key in graph_subset.keys()}
+        shortest_path_info[source_node][DISTANCE_KEY] = 0
+        visited[source_node] = True
+        print("Graph subset: ", graph_subset)
+        print("DS:", shortest_path_info)
+        print("Visit:", visited)
+        pq = PriorityQueue()
+        pq.add_task((0.0, source_node))
+        print("Testing new bfs for shortest path")
+        while pq:
+            new_node = pq.pop_task()[1]
+            visited[new_node] = True
+            print(new_node)
+            for connected_node in graph_subset[new_node][1]:
+                if not visited[connected_node]:
+                    pq_input = create_input_for_pq(new_node, connected_node)
+                    new_dist = pq_input[0] + shortest_path_info[new_node][DISTANCE_KEY]
+                    if new_dist < shortest_path_info[connected_node][DISTANCE_KEY]:
+                        shortest_path_info[connected_node][DISTANCE_KEY] = new_dist
+                        shortest_path_info[connected_node][PREVIOUS_VERTEX_KEY] = new_node
+                    pq.add_task(pq_input)
+                    #visited[connected_node] = True
+        print("Shortest path info:",shortest_path_info)
+         
+        # We need to create a while loop with a Priority Queue with values
+        # (channel_weight, node_label)
         return []
     
     def _run_simulation(self, best_route):
         """
-        Runs a single routing simulation given a path and outputs the stats of
-        that path being taken
+        Runs a single routing simulation given a shortest path and outputs the stats of
+        that path being taken (i.e. what channels are used and the results of
+        the selected channels)
         """
         return best_route
     
