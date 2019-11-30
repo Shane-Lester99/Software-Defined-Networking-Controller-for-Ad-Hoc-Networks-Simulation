@@ -177,8 +177,29 @@ class RoutingSystemMasterGraph:
         Runs a single routing simulation given a shortest path and outputs the stats of
         that path being taken (i.e. what channels are used and the results of
         the selected channels)
+        Our stats data structure will be:
+        [RouteData(nodes:(node_1, node_2), channel:channel_string,
+            channel_data:channels_selection), ...]
         """
-        return best_route
+        def get_channel_obj(source, dest):
+            """
+            Given two adjacent nodes, return there edge (which is a channel obj)
+            """
+            return self._graph[source][1][dest]
+        print(best_route)
+        output_stat_record = namedtuple("RouteData", "nodes channel channel_selection")
+        prev_node = best_route.best_route[0]
+        for next_node_id in range(1, len(best_route.best_route)):
+            next_node = best_route.best_route[next_node_id]
+            chan = get_channel_obj(prev_node, next_node)
+            curr_test = output_stat_record((prev_node, next_node), chan, [])
+            sel = chan.choose_channel_and_report_result()
+            curr_test.channel_selection.append(sel)
+            while not sel.had_success:
+                sel = chan.choose_channel_and_report_result()
+                curr_test.channel_selection.append(sel)
+            prev_node = next_node
+        return curr_test
     
     
     

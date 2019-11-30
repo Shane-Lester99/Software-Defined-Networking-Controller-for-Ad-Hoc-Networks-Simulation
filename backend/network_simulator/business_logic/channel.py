@@ -32,7 +32,7 @@ class ChannelSystemNode:
         channel_choice = random.randint(0, self.AMOUNT_OF_CHANNELS-1)
         prob_of_success = self.channel_system[channel_choice]
         had_success = random.uniform(0, 1) < prob_of_success
-        create_result = namedtuple("ChannelResult", "result channel_selected prob_of_success")
+        create_result = namedtuple("ChannelResult", "had_success channel_selected prob_of_success")
         return create_result(had_success, channel_choice, prob_of_success)
         
         
