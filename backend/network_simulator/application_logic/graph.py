@@ -5,6 +5,12 @@ from priority_queue import PriorityQueue
 create_best_route = namedtuple("BestRoute", "cost best_route")
 
 class RoutingSystemMasterGraph:
+    """
+    Routing system graph. The graph is fed data by a base_station_map (which 
+    contains coordinates and a transmission radius) so that a graph can be 
+    generated. Once the graph is generated it can run routing simulations given
+    a source node and a destination node.
+    """
     
     def __init__(self, base_station_map, transmission_radius):
         # Adj list is of form {device_name: (metadata, {some_connected_node: channel_node})}

@@ -3,6 +3,12 @@ from collections import namedtuple
 from decorators import validate_grid_input
 
 class Grid:
+    """
+    Grid class takes in a list of base stations and user devices within the
+    transmission radius of a base station and generates a map of all the
+    coordinates called self._device_data. Also this module provides a grid
+    visulation used for debugging the backend. 
+    """
     
     DIMENSIONS = 10
     EMPTY_SPACE = "___"

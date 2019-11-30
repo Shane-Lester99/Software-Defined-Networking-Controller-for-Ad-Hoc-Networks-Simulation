@@ -3,6 +3,10 @@ import random
 from decorators import validate_key
 
 class PriorityQueue:
+    """
+    Simple PriorityQueue which only accepts inputs in form
+    (priority_number<float>, data<Obj>)
+    """
     def __init__(self, arr = None):
         self.heap = []
         arr = arr if arr else []

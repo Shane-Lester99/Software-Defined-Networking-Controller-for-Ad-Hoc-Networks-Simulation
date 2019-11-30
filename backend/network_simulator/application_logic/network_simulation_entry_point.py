@@ -2,6 +2,10 @@ import grid
 import graph
 
 class NetworkSimulationEntryPoint:
+    """
+    Entry point of NetworkSimulation application. It provides an 
+    interface over the application modules and returns the results as JSON.
+    """
     
     def __init__(self, base_station_list):
         self._entry_grid = grid.Grid(base_station_list)
@@ -11,9 +15,10 @@ class NetworkSimulationEntryPoint:
             
     def command_line_test_exp(self):
         """
-        this will allow the user to run a test without the use of the API. 
+        This will allow the user to run a test without the use of the API. 
         THe user can write queries on the command line and once they exit they
-        will retrieve the system output stats
+        will retrieve the system output stats. The purpose of this function is
+        for backend debugging.
         """
         print(self._entry_grid)
         print(self._entry_graph)
@@ -29,7 +34,7 @@ class NetworkSimulationEntryPoint:
     def retrieve_random_graph_as_json(self):
         """
         For the initialization function call of the API. This function will return
-        the random graph.
+        the random graph that will remain static after initialization.
         """
         return
     

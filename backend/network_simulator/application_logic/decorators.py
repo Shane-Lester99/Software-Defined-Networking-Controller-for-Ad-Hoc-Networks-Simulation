@@ -1,3 +1,7 @@
+"""
+Decorators for input validation of various modules
+"""
+
 import random
 
 def validate_key(pq_add_task_func):
