@@ -11,7 +11,9 @@ class NetworkSimulationEntryPoint:
             
     def command_line_test_exp(self):
         """
-        this will allow the user to run a test without the use of the API
+        this will allow the user to run a test without the use of the API. 
+        THe user can write queries on the command line and once they exit they
+        will retrieve the system output stats
         """
         print(self._entry_grid)
         print(self._entry_graph)
@@ -23,8 +25,31 @@ class NetworkSimulationEntryPoint:
             x = input("Please specify query path in form <device_id_1><device_id2>:")
             source, dest = x[:3], x[3:]
             print(self._entry_graph.query_for_optimal_route(source, dest))
+            
+    def retrieve_random_graph_as_json(self):
+        """
+        For the initialization function call of the API. This function will return
+        the random graph.
+        """
+        return
+    
+    def retrieve_query_results_as_json(self, source_node, dest_node):
+        """
+        The API allows for running a single query, and this will be the output.
+        """
+        return
+    
+    def retrieve_system_results_as_json(self):
+        """
+        The API allows for seeing all the results of all the queries.
+        """
+        return
+    
+    
 
 if __name__ == "__main__":
+    # This will run a test so that the user can query from the command line to
+    # debug the backend
     bs_list = [5 for _ in range(9)]
     entry = NetworkSimulationEntryPoint(bs_list)
     entry.command_line_test_exp()

@@ -24,10 +24,3 @@ class PriorityQueue:
     
     def __len__(self):
         return len(self.heap)
-        
-if __name__ == "__main__":
-    q = PriorityQueue([(1.1111, 'a'),(1.11, 'b'),(1.1113, 'c'),(1.1114,'d')])
-    # q = PriorityQueue()
-    # q.add_task((1.123, ['a', 'b', 'c']))
-    while len(q):
-        print(q.pop_task())

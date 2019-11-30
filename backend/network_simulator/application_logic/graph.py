@@ -201,6 +201,3 @@ class RoutingSystemMasterGraph:
             results.append(curr_test)
             prev_node = next_node
         return results
-    
-    
-    

@@ -119,10 +119,3 @@ class Grid:
                 if self.grid[j][i][0] == self.BASE_STATION_ROOT:
                     return False, boundaries
         return True, boundaries
-        
-            
-if __name__ == "__main__":
-    inp = [3 for _ in range(4)]
-    x = Grid(inp)
-    print(x)
-    print(x.device_data)
