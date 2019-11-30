@@ -10,7 +10,7 @@ class Grid:
     ROUTABLE_DEVICE_ROOT = "R"
     TRANSMISSION_RADIUS = 2
     
-    @validate_grid_input
+    # @validate_grid_input
     def __init__(self, num_base_stations, num_devices):
         """
         Will Generate a grid of size 10 * 10 as an array of arrays
@@ -132,6 +132,6 @@ class Grid:
 if __name__ == "__main__":
     # TODO: As is we need to have the number of devices evenly divide the
     # number of base stations
-    x = Grid(9, 4)
+    x = Grid(9, 45)
     print(x)
     print(x.device_data)
