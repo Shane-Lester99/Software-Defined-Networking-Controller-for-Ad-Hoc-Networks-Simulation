@@ -8,8 +8,6 @@ def run_cli_in_main():
     This will run a test so that the user can query from the command line to
     debug the backend
     """
-    # TODO: Output this as JSON instead of namedtuples (which we don't
-    # want client to know about)
     print("This is the CLI version of the Network Routing Simulation.")
     print("To set up the network topology, write a list of 1 to 8 numbers.")
     print("Each number signifies how many user devices are associated with that base station.\n")
@@ -43,15 +41,15 @@ class NetworkSimulationEntryPoint:
         # TODO: Output this as JSON instead of namedtuples (which we don't
         # want client to know about)
         print(self._entry_grid)
-        print(self._entry_graph)
+        print(self.retrieve_random_graph_as_json())
         while True:
             exit_string = input("Would you like to specify a query path (Y/N):")
             if exit_string == "N" or exit_string == "n":
-                print(self._entry_graph.sys_stats)
+                print(self.retrieve_system_results_as_json())
                 break
             x = input("Please specify query path in form <device_id_1><device_id2>:")
             source, dest = x[:3], x[3:]
-            print(self._entry_graph.query_for_optimal_route(source, dest))
+            print(self.retrieve_query_results_as_json(source, dest))
             
     def retrieve_random_graph_as_json(self):
         """
@@ -96,6 +94,8 @@ class NetworkSimulationEntryPoint:
         The API allows for running a single query, and this will be the output.
         """
         stat_pkg = self._entry_graph.query_for_optimal_route(source_node, dest_node)
+        if stat_pkg[1] == -1:
+            return json.dumps({})
         json_dict = dict()
         json_dict = self._convert_one_query_stat_block_to_json(json_dict, stat_pkg)
         return json.dumps(json_dict)
@@ -143,12 +143,26 @@ class NetworkSimulationEntryPoint:
         is that the former contains all the values in the session and the 
         latter contains just that particular query.
         """
-        def parse_exp(exp_list):
-            # TODO: Implement this stub to output a dict above which we can
-            # convert to a json string
-            return []
+        def parse_exp(result_list):
+            json_dict = dict()
+            for result in result_list:
+                node_key = result.nodes[0] + "_" + result.nodes[1]
+                channel = self._convert_channel_to_dict(result.channel)
+                channel_selections = \
+                    [
+                        {
+                            "had_success": chan_result.had_success,
+                            "chan_selected": chan_result.channel_selected,
+                            "prob_success": chan_result.prob_of_success
+                        } for chan_result in result.channel_selection
+                    ]
+                json_dict[node_key] = {
+                    "channel": channel,
+                    "selections": channel_selections
+                }
+            return json_dict
+            
         date_string, stat_block = stat_pkg
-        print(stat_block)
         json_dict[date_string] = {
             "cost": round(stat_block.cost,4),
             "path": stat_block.best_route,
@@ -162,21 +176,9 @@ class NetworkSimulationEntryPoint:
             "weight": chan.channel_weight,
             "channels": chan.channel_system
         }
-    
 
 if __name__ == "__main__":
-    # run_cli_in_main()
-    bs_list = [3 for _ in range(2)]
-    network_sim = NetworkSimulationEntryPoint(bs_list)
-    print(network_sim._entry_grid)
-    print(network_sim.retrieve_random_graph_as_json())
-    import sys
-    sys.exit(1)
-    while True:
-        x = input("Please give query")
-        if x == "no":
-            break
-        source, dest = x[:3], x[3:]
-        print(network_sim.retrieve_query_results_as_json(source,dest))
-    print(network_sim.retrieve_system_results_as_json())
-    
+    """
+    Run this file as the entry to envoke the CLI version of this application
+    """
+    run_cli_in_main()

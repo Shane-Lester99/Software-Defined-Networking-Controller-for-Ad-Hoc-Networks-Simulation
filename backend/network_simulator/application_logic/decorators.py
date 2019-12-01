@@ -35,4 +35,3 @@ def validate_grid_input(grid_init_func):
             raise ValueError("Must have between 1 to 9 base stations")
         grid_init_func(*args, **kwargs)
     return check_input
-        

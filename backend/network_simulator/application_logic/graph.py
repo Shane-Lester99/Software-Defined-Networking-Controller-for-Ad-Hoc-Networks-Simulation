@@ -40,8 +40,6 @@ class RoutingSystemMasterGraph:
                 for (dest_device_name, channel) in edges[1].items()]) + "\n")
         return repr_str
         
-    
-    
     def query_for_optimal_route(self, device_name_source, device_name_dest):
         """
         Finds the shortest path between the source and destination by first
@@ -179,7 +177,7 @@ class RoutingSystemMasterGraph:
             best_route.best_route.reverse()
         else:
             # In case of bugs or unexpected behavior, this will make it easier to
-            # debug. This should never execute
+            # debug. This should never execute.
             best_route = create_best_route(-1, None)
         return best_route
     
