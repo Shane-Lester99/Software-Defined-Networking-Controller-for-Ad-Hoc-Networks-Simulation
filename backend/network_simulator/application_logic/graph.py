@@ -19,13 +19,13 @@ class RoutingSystemMasterGraph:
         # The channel represents the weight of the edge
         self._global_channel_id = 1
         self._transmission_radius = transmission_radius
-        self._graph = self._generate_graph(base_station_map)
+        self.graph = self._generategraph(base_station_map)
         self.sys_stats = list()
     
     def __repr__(self):
         repr_str = "***Graph of Network Routing System***\n"
-        for source_device_name, edges in self._graph.items():
-            bs_name = self._graph[source_device_name][0].base_station_name
+        for source_device_name, edges in self.graph.items():
+            bs_name = self.graph[source_device_name][0].base_station_name
             # Router is connected to base station -> ...
             repr_str = (repr_str + source_device_name
                 + " connected to {} -> ".format(bs_name))
@@ -50,7 +50,7 @@ class RoutingSystemMasterGraph:
         reachable_nodes_set = self._bfs(device_name_source)
         if device_name_dest not in reachable_nodes_set:
             return create_best_route(-1, None)
-        graph_subset = ({key: value for (key, value) in self._graph.items()
+        graph_subset = ({key: value for (key, value) in self.graph.items()
                           if key in reachable_nodes_set})
         # If we have paths that exist for this query, then we will use this
         # subset of the graph for our shortest path algorithm
@@ -70,7 +70,7 @@ class RoutingSystemMasterGraph:
     def output_system_stats(self):
         return self.sys_stats
     
-    def _generate_graph(self, base_station_map):
+    def _generategraph(self, base_station_map):
         """
         Generates the adjanency list used to model the graph for the network
         routing system. 
@@ -113,16 +113,16 @@ class RoutingSystemMasterGraph:
         Runs breadth first search on a graph node to see all reachable nodes.
         Will then return a set with all the reachabe nodes
         """
-        if node not in self._graph:
+        if node not in self.graph:
             return set()
         reachable_nodes = set()
-        visited = {node_name: False for node_name in self._graph.keys()}
+        visited = {node_name: False for node_name in self.graph.keys()}
         queue = [node]
         visited[node] = True
         while queue:
             curr_node = queue.pop()
             reachable_nodes.add(curr_node)
-            for pot_new_node in self._graph[curr_node][1]:
+            for pot_new_node in self.graph[curr_node][1]:
                 if visited[pot_new_node] == False:
                     queue.append(pot_new_node)
                     visited[pot_new_node] = True
@@ -191,7 +191,7 @@ class RoutingSystemMasterGraph:
             """
             Given two adjacent nodes, return there edge (which is a channel obj)
             """
-            return self._graph[source][1][dest]
+            return self.graph[source][1][dest]
         results = list()
         output_stat_record = namedtuple("RouteData", "nodes channel channel_selection")
         prev_node = best_route.best_route[0]

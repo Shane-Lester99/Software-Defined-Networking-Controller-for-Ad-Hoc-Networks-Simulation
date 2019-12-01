@@ -1,5 +1,19 @@
 import grid
 import graph
+import json
+
+def run_cli_in_main():
+    """
+    This will run a test so that the user can query from the command line to
+    debug the backend
+    """
+    print("This is the CLI version of the Network Routing Simulation.")
+    print("To set up the network topology, write a list of 1 to 9 numbers.")
+    print("Each number signifies how many user devices are associated with that base station.\n")
+    x = input("Please enter these numbers now as a single space seperated list:")
+    bs_list = [int(char) for char in x if char != " "]
+    entry = NetworkSimulationEntryPoint(bs_list)
+    entry.command_line_test_exp()
 
 class NetworkSimulationEntryPoint:
     """
@@ -39,7 +53,21 @@ class NetworkSimulationEntryPoint:
         For the initialization function call of the API. This function will return
         the random graph that will remain static after initialization.
         """
-        return
+        json_dict = dict()
+        for node_name, entries in self._entry_graph.graph.items():
+            metadata = entries[0]
+            connected_edges = entries[1]
+            string_connected_edges = {node_name: str(channel) for node_name,
+                                      channel in connected_edges.items()}
+            json_dict[node_name] = {
+                 "metadata": {
+                     "base_station_name": metadata.base_station_name,
+                     "base_station_coordinates": metadata.base_station_coordinates,
+                     "node_coordinates": metadata.routable_device_coordinates
+                 },
+                 "edges": string_connected_edges
+            }
+        return json.dumps(json_dict)
     
     def retrieve_query_results_as_json(self, source_node, dest_node):
         """
@@ -56,12 +84,9 @@ class NetworkSimulationEntryPoint:
     
 
 if __name__ == "__main__":
-    # This will run a test so that the user can query from the command line to
-    # debug the backend
-    print("This is the CLI version of the Network Routing Simulation.")
-    print("To set up the network topology, write a list of 1 to 9 numbers.")
-    print("Each number signifies how many user devices are associated with that base station.\n")
-    x = input("Please enter these numbers now as a single space seperated list:")
-    bs_list = [int(char) for char in x if char != " "]
-    entry = NetworkSimulationEntryPoint(bs_list)
-    entry.command_line_test_exp()
+    # run_cli_in_main()
+    bs_list = [2 for _ in range(2)]
+    x = NetworkSimulationEntryPoint(bs_list)
+    print(x._entry_grid)
+    print(x.retrieve_random_graph_as_json())
+    
