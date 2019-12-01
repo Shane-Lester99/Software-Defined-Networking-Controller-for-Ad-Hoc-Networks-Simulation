@@ -20,14 +20,14 @@ def validate_key(pq_add_task_func):
     
 def validate_grid_input(grid_init_func):
     """
-    Validate grid input s.t. it is an array of size 1 to 9 (number of base stations
+    Validate grid input s.t. it is an array of size 1 to 8 (number of base stations
     we can have) and each base station dooesn't have more then 5 values. Therefore
-    we can have a maximum of 45 + 9 = 54 devices on the board (9 base stations and 5 
-    devices per base station)
+    we can have a maximum of 40 + 8 = 48 devices on the board (8 base stations and 5 
+    devices per base station (8*5 devices))
     """
     def check_input(*args, **kwargs):
         base_station_list = args[1]
-        if 1 <= len(base_station_list) <= 9:
+        if 1 <= len(base_station_list) <= 8:
             for num_devices in base_station_list:
                 if not (1 <= num_devices <= 5):
                     raise ValueError("Must have between 1 to 5 user devices per base station")

@@ -1,8 +1,10 @@
 import channel
 from collections import namedtuple
 from priority_queue import PriorityQueue
+from datetime import datetime
 
 create_best_route = namedtuple("BestRoute", "cost best_route")
+create_stat_package = namedtuple("StatPackage", "cost best_route exp_results")
 
 class RoutingSystemMasterGraph:
     """
@@ -19,8 +21,9 @@ class RoutingSystemMasterGraph:
         # The channel represents the weight of the edge
         self._global_channel_id = 1
         self._transmission_radius = transmission_radius
-        self.graph = self._generategraph(base_station_map)
-        self.sys_stats = list()
+        self.graph = self._generate_graph(base_station_map)
+        # timestamp is key with output data as value
+        self.sys_stats = {}
     
     def __repr__(self):
         repr_str = "***Graph of Network Routing System***\n"
@@ -49,7 +52,8 @@ class RoutingSystemMasterGraph:
         """
         reachable_nodes_set = self._bfs(device_name_source)
         if device_name_dest not in reachable_nodes_set:
-            return create_best_route(-1, None)
+            failed_exp_time = str(datetime.now())
+            return failed_exp_time, -1
         graph_subset = ({key: value for (key, value) in self.graph.items()
                           if key in reachable_nodes_set})
         # If we have paths that exist for this query, then we will use this
@@ -61,16 +65,17 @@ class RoutingSystemMasterGraph:
         best_route = self._calc_shortest_path(graph_subset,
                                               device_name_source,
                                               device_name_dest)
+        exp_time = str(datetime.now())
         if best_route.best_route:
-            output_stats = self._run_simulation(best_route)
-            self.sys_stats.append(output_stats)
-            return output_stats
-        return []
-
-    def output_system_stats(self):
-        return self.sys_stats
+            output_stats = create_stat_package(best_route.cost,
+                                               best_route.best_route,
+                                               self._run_simulation(best_route)
+                                              )
+            self.sys_stats[exp_time] = output_stats
+            return exp_time, output_stats
+        return exp_time, -1
     
-    def _generategraph(self, base_station_map):
+    def _generate_graph(self, base_station_map):
         """
         Generates the adjanency list used to model the graph for the network
         routing system. 
