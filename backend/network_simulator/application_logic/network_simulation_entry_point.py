@@ -8,13 +8,15 @@ def run_cli_in_main():
     This will run a test so that the user can query from the command line to
     debug the backend
     """
+    # TODO: Output this as JSON instead of namedtuples (which we don't
+    # want client to know about)
     print("This is the CLI version of the Network Routing Simulation.")
-    print("To set up the network topology, write a list of 1 to 9 numbers.")
+    print("To set up the network topology, write a list of 1 to 8 numbers.")
     print("Each number signifies how many user devices are associated with that base station.\n")
     x = input("Please enter these numbers now as a single space seperated list:")
     bs_list = [int(char) for char in x if char != " "]
     entry = NetworkSimulationEntryPoint(bs_list)
-    entry.command_line_test_exp()
+    entry.run_cli()
 
 class NetworkSimulationEntryPoint:
     """
@@ -31,13 +33,15 @@ class NetworkSimulationEntryPoint:
             self._entry_grid.device_data,
             self._entry_grid.TRANSMISSION_RADIUS)
             
-    def command_line_test_exp(self):
+    def run_cli(self):
         """
-        This will allow the user to run a test without the use of the API. 
+        This will allow the user to run the app as a cli without the use of the API. 
         THe user can write queries on the command line and once they exit they
         will retrieve the system output stats. The purpose of this function is
         for backend debugging.
         """
+        # TODO: Output this as JSON instead of namedtuples (which we don't
+        # want client to know about)
         print(self._entry_grid)
         print(self._entry_graph)
         while True:
@@ -53,12 +57,29 @@ class NetworkSimulationEntryPoint:
         """
         For the initialization function call of the API. This function will return
         the random graph that will remain static after initialization.
+        JSON is of form:
+        {
+            "R02": {
+                "metadata": {
+                    base_station_name: "B02",
+                    base_station_coordinates: [6,9],
+                    node_coordinates: [4,8]
+                },
+                "edges" : {
+                    "R03" : {
+                        "id": <int>,
+                        "weight": <float>,
+                        "channels": <List>
+                    }, ...
+                }
+            }
+        }
         """
         json_dict = dict()
         for node_name, entries in self._entry_graph.graph.items():
             metadata = entries[0]
             connected_edges = entries[1]
-            string_connected_edges = {node_name: str(channel) for node_name,
+            string_connected_edges = {node_name: self._convert_channel_to_dict(channel) for node_name,
                                       channel in connected_edges.items()}
             json_dict[node_name] = {
                  "metadata": {
@@ -91,27 +112,69 @@ class NetworkSimulationEntryPoint:
         return json.dumps(json_dict)
     
     def _convert_one_query_stat_block_to_json(self, json_dict, stat_pkg):
+        """
+        Converts statistics from query into a dictionary that can be converted
+        to json string by json.dumps. 
+        JSON is in form:
+        {
+            date_str: {
+                cost: <Float>,
+                path: <List>,
+                results: {
+                    R22_R02: {
+                        channel: {
+                            id: <int>
+                            weight: <float>
+                            channels: <List>
+                        },
+                        selections: [
+                            {
+                                had_success: <bool>,
+                                chan_selected: <int>,
+                                prob_success: <float>
+                            }, ...
+                        ]
+                    }
+                }
+            }, ...
+        }
+        This json string is used for both
+        self.retrieve_system.. and self.retrieve_query... . The only difference
+        is that the former contains all the values in the session and the 
+        latter contains just that particular query.
+        """
         def parse_exp(exp_list):
+            # TODO: Implement this stub to output a dict above which we can
+            # convert to a json string
             return []
         date_string, stat_block = stat_pkg
         print(stat_block)
         json_dict[date_string] = {
             "cost": round(stat_block.cost,4),
             "path": stat_block.best_route,
-            "exp_res": parse_exp(stat_block.exp_results)
+            "results": parse_exp(stat_block.exp_results)
         }
         return json_dict
+    
+    def _convert_channel_to_dict(self, chan):
+        return {
+            "id": chan.c_id,
+            "weight": chan.channel_weight,
+            "channels": chan.channel_system
+        }
     
 
 if __name__ == "__main__":
     # run_cli_in_main()
-    bs_list = [5 for _ in range(8)]
+    bs_list = [3 for _ in range(2)]
     network_sim = NetworkSimulationEntryPoint(bs_list)
     print(network_sim._entry_grid)
-    #print(x.retrieve_random_graph_as_json())
+    print(network_sim.retrieve_random_graph_as_json())
+    import sys
+    sys.exit(1)
     while True:
         x = input("Please give query")
-        if x == 'no':
+        if x == "no":
             break
         source, dest = x[:3], x[3:]
         print(network_sim.retrieve_query_results_as_json(source,dest))
