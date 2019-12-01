@@ -38,8 +38,6 @@ class NetworkSimulationEntryPoint:
         will retrieve the system output stats. The purpose of this function is
         for backend debugging.
         """
-        # TODO: Output this as JSON instead of namedtuples (which we don't
-        # want client to know about)
         print(self._entry_grid)
         print(self.retrieve_random_graph_as_json())
         while True:
