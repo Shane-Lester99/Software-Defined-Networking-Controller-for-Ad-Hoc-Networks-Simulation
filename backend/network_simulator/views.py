@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 #from restframework import viewset
 
 import sys
@@ -23,12 +23,12 @@ def init_sim(req, base_station_list):
             base_station_arr = [int(device) for device in base_station_list if device != "_"]
             network_routing_system = sim.NetworkSimulationEntryPoint(base_station_arr)
             json_graph = network_routing_system.retrieve_random_graph_as_json()
-            return HttpResponse(json_graph, status=200)
+            return HttpResponse(json_graph, content_type="application/json", status=200)
         except ValueError as err: 
-            return HttpResponse("Error: " + str(err), status=400)
+            return HttpResponse(content="Error: " + str(err), status=400)
     else:
         json_graph = network_routing_system.retrieve_random_graph_as_json()
-        return HttpResponse(json_graph, status = 200)
+        return HttpResponse(json_graph, content_type="application/json", status = 200)
     
 def route_data(req, source, dest):
     """
@@ -49,4 +49,3 @@ def collect_stats(req):
         return HttpResponse("Error: Must initialize app before query", status=400)
     json_stats = network_routing_system.retrieve_system_results_as_json()
     return HttpResponse(json_stats, status=200)
-    return HttpResponse('collect stats')
