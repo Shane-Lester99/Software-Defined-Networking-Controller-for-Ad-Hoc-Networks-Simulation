@@ -14,15 +14,13 @@ const baseUrl = "http://127.0.0.1:8080/network_simulator"
 // Note: Make sure to call this function to init the system before calling
 // the two below
 async function callInitSystem(baseStationArray) {
-    const bsString = "/init_sim/" + baseStationArray.join("_");
-    const url = baseUrl + bsString
+    const url = baseUrl + "/init_sim/" + baseStationArray.join("_");
     const res = await fetch(url)
         .then(res => res.json())
         .then(json_random_graph => json_random_graph)
         .catch(err => err)
     return res
 }
-
 
 async function callQueryRoute(source, dest) {
     const url = baseUrl + "/route_data/" + source + "/" + dest
