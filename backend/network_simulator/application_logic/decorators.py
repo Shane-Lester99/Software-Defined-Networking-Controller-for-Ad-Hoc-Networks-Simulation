@@ -32,6 +32,6 @@ def validate_grid_input(grid_init_func):
                 if not (1 <= num_devices <= 5):
                     raise ValueError("Must have between 1 to 5 user devices per base station")
         else:
-            raise ValueError("Must have between 1 to 9 base stations")
+            raise ValueError("Must have between 1 to 8 base stations")
         grid_init_func(*args, **kwargs)
     return check_input
