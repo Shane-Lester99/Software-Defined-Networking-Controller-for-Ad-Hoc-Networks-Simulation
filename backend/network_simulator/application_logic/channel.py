@@ -22,7 +22,10 @@ class ChannelSystemNode:
         self.channel_weight = round(5 - sum(self.channel_system), 4)
         
     def __repr__(self):
-        return "ChannelSystemNode(id: {},total_weight: {}, channels: {})".format(self.c_id,self.channel_weight, self.channel_system)
+        return "ChannelSystemNode(id: {},total_weight: {}, channels: {})".format(
+            self.c_id,
+            self.channel_weight,
+            self.channel_system)
         
     def choose_channel_and_report_result(self):
         """
@@ -34,10 +37,3 @@ class ChannelSystemNode:
         had_success = random.uniform(0, 1) < prob_of_success
         create_result = namedtuple("ChannelResult", "had_success channel_selected prob_of_success")
         return create_result(had_success, channel_choice, prob_of_success)
-        
-        
-if __name__ == "__main__":
-    c = ChannelSystemNode(1)
-    print(c)
-    for _ in range(5):
-        print(c.choose_channel_and_report_result())

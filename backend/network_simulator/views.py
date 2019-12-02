@@ -38,7 +38,7 @@ def route_data(req, source, dest):
     if not network_routing_system:
         return HttpResponse("Error: Must initialize app before query", status=400)
     json_stats = network_routing_system.retrieve_query_results_as_json(source, dest)
-    return HttpResponse(json_stats, status=200)
+    return HttpResponse(json_stats, content_type="application/json", status=200)
     
 def collect_stats(req):
     """
@@ -48,4 +48,5 @@ def collect_stats(req):
     if not network_routing_system:
         return HttpResponse("Error: Must initialize app before query", status=400)
     json_stats = network_routing_system.retrieve_system_results_as_json()
-    return HttpResponse(json_stats, status=200)
+    print(json_stats)
+    return HttpResponse(json_stats, content_type="application/json", status=200)
