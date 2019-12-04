@@ -1,6 +1,9 @@
 import React from "react";
 import LandingPage from './LandingPage';
 import GraphPage from './GraphPage'
+import TabBar from './TabBar'
+import './styles/index.css'
+
 
 export default class App extends React.Component{
   constructor(props) {
@@ -29,12 +32,13 @@ export default class App extends React.Component{
     if(this.state.page === "Landing")
       return <LandingPage changePage={this.changePage} setData={this.setData}/>
     else(this.state.page === "Graph")
-      return <GraphPage data={this.state.data}/>
+      return <GraphPage changePage={this.changePage} data={this.state.data}/>
   }
 
   render() {
     return(
-      <div>
+      <div id="page">
+        <TabBar changePage={this.changePage}/>
         {this.renderPage()}
       </div>
     )

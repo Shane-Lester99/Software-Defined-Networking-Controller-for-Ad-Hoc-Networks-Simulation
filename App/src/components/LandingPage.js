@@ -1,4 +1,5 @@
 import React from 'react';
+import './styles/index.css';
 
 class LandingPage extends React.Component {
   constructor (props) {
@@ -24,13 +25,13 @@ class LandingPage extends React.Component {
       let data = {
         data: {
           id: num,
-          label: `Node ${num}`,
+          label: `N${num}`,
           type:'device'
         },
         position: {
           x: this.getRandomInt(100),
           y: this.getRandomInt(100)
-        }
+        },
       };
       elements.push(data);
     }
@@ -38,7 +39,7 @@ class LandingPage extends React.Component {
       let data = {
         data: {
           id: `Base Station ${num}`,
-          label: `Base Station ${num}`,
+          label: `BS${num}`,
           type: 'baseStation'
         },
         position: {
@@ -84,13 +85,15 @@ class LandingPage extends React.Component {
 
   render() {
     return(
-      <div>
-        <h1 id="title">Secondary Wireless Network Simulation </h1>
-        <div>
+      <div id="landingPage">
+        <h1 id="title">Wireless Network Simulation </h1>
+        <div id="prompt">
           <h2>Please Enter </h2>
           <input placeholder={'Number of Nodes'} onChange={this.nodeInput} />
+          <br/>
           <input placeholder={'Number of Base Stations'} onChange={this.baseStationInput}/>
-          <button onClick={this.randomize}>Randomize</button>
+          <br/>
+          <button id="randomizeButton" onClick={this.randomize}>Randomize</button>
         </div>
       </div>
     )

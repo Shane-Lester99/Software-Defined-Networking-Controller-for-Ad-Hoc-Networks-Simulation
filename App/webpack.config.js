@@ -14,12 +14,19 @@ module.exports = {
             loader: "html-loader",
           }
         ]
-      }
+      },
+      { 
+        test: /\.css$/, 
+        loader: "style-loader!css-loader" },
+      {
+        test: /\.(svg|png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+          },
+        ],
+      },
     ]
-  },
-  devServer: {
-    compress: true,
-    disableHostCheck: true
   },
   plugins: [
     new HtmlWebPackPlugin({

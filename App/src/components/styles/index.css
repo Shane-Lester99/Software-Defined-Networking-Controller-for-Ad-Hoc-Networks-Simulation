@@ -1,0 +1,134 @@
+html,body, section {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+#page {
+  height: 100%;
+  width: 100%;
+  align-items: center;
+}
+
+#landingPage {
+  background-image: url("../../../assets/LandingBackground.jpg");
+  height:100%;
+  width:100%;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color:#ffffff;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#title {
+  margin:0;
+  padding:0;
+  padding-top: 15%;
+  font-size: 5vh;
+}
+
+#prompt {
+  font-size: 2vh;
+  padding:0;
+  margin:0;
+}
+
+input {
+  font-size: 2vh;
+  text-align: center;
+  width: 30vh;
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+#randomizeButton {
+  background-color: rgb(200, 142, 89);
+  color: black;
+  font-size: 2vh;
+  border-radius: 5px;
+}
+
+#graphPage {
+  height:100%;
+  width:100%;
+  margin:auto;
+  background-image: url("../../../assets/LandingBackground.jpg");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color:#ffffff;
+}
+
+#addLink {
+  display:flex;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+  width:100%;
+  padding-bottom: 20px;
+}
+
+#graphTitle {
+  margin:0;
+  padding:0;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  font-size: 5vh;
+  text-align:center;
+}
+
+#addButton {
+  background-color: #3549f9;
+  color: white;
+  font-size: 2vh;
+  border-radius: 5px;
+  padding-top:0;
+}
+
+#homeButton {
+  position: absolute;
+  background-color: rgba(240, 248, 255, 0);
+  color: white;
+  font-size: 3vh;
+  border:none;
+}
+
+#graphContainer {
+  display:flex;
+  flex-direction: row;
+  width:100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.graph {
+  width:600px; 
+  height:550px;
+  background-color:white;
+  flex:1,
+}
+
+#data {
+  background-color: rgb(245, 244, 244);
+  width: 350px;
+  height:550px;
+  color:black;
+  display:flex;
+  flex-direction: column;
+  border-left: 1px;
+  border-color: black;
+  flex:1,
+}
+
+p {
+  padding-left: 20px;
+}

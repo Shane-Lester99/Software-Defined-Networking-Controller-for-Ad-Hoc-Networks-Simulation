@@ -1,0 +1,12 @@
+[
+  {
+    "group": "edges",
+    "data": {
+      "source": "3",
+      "target": "2",
+      "label": "3",
+      "color": "orange",
+      "type": "edge"
+    }
+  }
+]
