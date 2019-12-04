@@ -28,6 +28,10 @@ module.exports = {
       },
     ]
   },
+  devServer: {
+     compress: true,
+     disableHostCheck: true
+  },
   plugins: [
     new HtmlWebPackPlugin({
       template: "./src/index.html",
