@@ -43,14 +43,14 @@ class NetworkSimulationEntryPoint:
         """
         print(self._entry_grid)
         print(self.retrieve_random_graph_as_json())
-        # while True:
-        #     exit_string = input("Would you like to specify a query path (Y/N):")
-        #     if exit_string == "N" or exit_string == "n":
-        #         print(self.retrieve_system_results_as_json())
-        #         break
-        #     x = input("Please specify query path in form <device_id_1><device_id2>:")
-        #     source, dest = x[:3], x[3:]
-        #     print(self.retrieve_query_results_as_json(source, dest))
+        while True:
+            exit_string = input("Would you like to specify a query path (Y/N):")
+            if exit_string == "N" or exit_string == "n":
+                print(self.retrieve_system_results_as_json())
+                break
+            x = input("Please specify query path in form <device_id_1><device_id2>:")
+            source, dest = x[:3], x[3:]
+            print(self.retrieve_query_results_as_json(source, dest))
             
     def retrieve_random_graph_as_json(self):
         """
@@ -93,12 +93,15 @@ class NetworkSimulationEntryPoint:
         """
         The API allows for running a single query, and this will be the output.
         """
-        stat_pkg = self._entry_graph.query_for_optimal_route(source_node, dest_node)
-        if stat_pkg[1] == -1:
-            return json.dumps({})
-        json_dict = dict()
-        json_dict = self._convert_one_query_stat_block_to_json(json_dict, stat_pkg)
-        return json.dumps(json_dict)
+        stat_pkg = self._entry_graph.retrieve_optimal_path_and_allocate_channels(
+                                                                    source_node,
+                                                                    dest_node)
+        print(stat_pkg)
+        # if stat_pkg[1] == -1:
+        #     return json.dumps({})
+        # json_dict = dict()
+        # json_dict = self._convert_one_query_stat_block_to_json(json_dict, stat_pkg)
+        # return json.dumps(json_dict)
     
     def retrieve_system_results_as_json(self):
         """
