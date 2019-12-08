@@ -1,4 +1,4 @@
-import numpy
+# import numpy
 from decorators import validate_amount, validate_path
 from collections import namedtuple
 
@@ -9,28 +9,37 @@ class Channels:
     @validate_amount
     def __init__(self, amount, transmission_radius):
         self.transmission_radius = transmission_radius
-        self.channels = [numpy.random.exponential() for _ in range(amount)]
+        # TODO: Make this random.exp
+        # self.channels = [numpy.random.exponential() for _ in range(amount)]
+        self.channels = [0.5 for _ in range(amount)]
         
     def __repr__(self):
         chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self.channels)])
         return "Channels({})".format(chan_str)
     
-    # @validate_path   
-    # def enumerate_available_channels(self, global_interference, coor_path):
-    #     def find_paths(coor_path, curr, output, blocked_channels):
-    #         if len(curr) == len(coor_path) - 1:
-    #             output.append(curr.copy())
-    #         for chan_num, _ in enumerate(self.channels):
-    #             if chan_num not in self._check
-    #             if edge_num 
-    #     output = [] 
-    #     find_paths(coor_path, [], output, [])
-    #     return False
+    @validate_path   
+    def find_all_possible_channels_for_path(self, global_interference, coor_path):
+        def find_paths(coor_path, curr, output, blocked_channels):
+            if len(curr) == len(coor_path) - 1:
+                output.append(curr.copy())
+                return
+            for chan_num, _ in enumerate(self.channels):
+                available_channels = self._check_available_channels(blocked_channels,
+                                                                    coor_path[len(curr)])
+                if chan_num in available_channels:
+                    blocked_channels.append(blocked_channel_entry(coor_path[len(curr)],
+                                                                  chan_num))
+                    curr.append(chan_num)
+                    find_paths(coor_path, curr, output, blocked_channels)
+                    blocked_channels.pop()
+                    curr.pop()
+        output = [] 
+        find_paths(coor_path, [], output, [])
+        return output
     
     def _check_available_channels(self, blocked_channels, curr_coor):
         """
-        This checks if given coordinate if there all blocked channels that
-        are unavailable. It returns a set of unavailable channels give a coor
+        This returns a list of available channels when given a cooridinate
         """
         dont_use_channels = set()
         for blocked_chan in blocked_channels:
@@ -44,12 +53,16 @@ class Channels:
                     dont_use_channels.add(blocked_chan.chan_used - 1)
                     dont_use_channels.add(blocked_chan.chan_used + 1)
         channels_total = set(i for i, _ in enumerate(self.channels))
-        return channels_total - dont_use_channels
+        return list(channels_total - dont_use_channels)
         
 if __name__ == "__main__":
-    sys_channels = Channels(5, 2)
-    x = [blocked_channel_entry((6,5), 0), blocked_channel_entry((6,6), 2), blocked_channel_entry((7,8), 4)]
-    print(sys_channels._check_available_channels(x, (6,8)))
+    sys_channels = Channels(4, 2)
+    path = [(0,0), (0,2), (0,4), (0,6)]
+    global_intf = None
+    x = sys_channels.find_all_possible_channels_for_path(global_intf, path)
+    print(x)
+    # x = [blocked_channel_entry((6,5), 0), blocked_channel_entry((6,6), 2), blocked_channel_entry((7,8), 4)]
+    # print(sys_channels._check_available_channels(x, (6,8)))
     # path = [(6,5,), (6,6,), (7,8,), (9,7,)]
     # print(sys_channels)
     # x = sys_channels.enumerate_available_channels(None, path)
