@@ -14,12 +14,12 @@ class RoutingSystemMasterGraph:
     a source node and a destination node.
     """
     
-    def __init__(self, base_station_map, transmission_radius):
+    def __init__(self, base_station_map, transmission_radius, channel_amount):
         # Adj list is of form {device_name: (metadata, {some_connected_node: channel_node})}
         # where the metadata contains the base station, base station coord, and the
         # router coordinates, and the dictionary is the edges connected to the device.
         # The channel represents the weight of the edge
-        self._global_channel_id = 1
+        self.channels = channel.Channels(channel_amount, transmission_radius)
         self._transmission_radius = transmission_radius
         self.graph = self._generate_graph(base_station_map)
         # timestamp is key with output data as value
@@ -33,11 +33,8 @@ class RoutingSystemMasterGraph:
             repr_str = (repr_str + source_device_name
                 + " connected to {} -> ".format(bs_name))
             # ... Edges and channel weights:
-            repr_str = (repr_str + str(["(DeviceName:{}, ChannelId:{}, ChannelWeight:{})".format(
-                                                                  dest_device_name,
-                                                                  channel.c_id,
-                                                                  channel.channel_weight) 
-                for (dest_device_name, channel) in edges[1].items()]) + "\n")
+            repr_str = (repr_str + str(["(DeviceName:{})".format(dest_device_name) 
+                for (dest_device_name) in edges[1]]) + "\n")
         return repr_str
         
     def query_for_optimal_route(self, device_name_source, device_name_dest):
@@ -91,7 +88,7 @@ class RoutingSystemMasterGraph:
                         base_station_name,
                         base_station_map[base_station_name].base_station_coordinates,
                         routable_device.coordinates
-                    ), {},)
+                    ), set(),)
         # Now add in all the edges to the adjacency list so we will have:
         # adj_list = {RoutableDeviceName: (RoutableDeviceEntry(),
         # [{connected_router: channel_edge}])}
@@ -101,10 +98,8 @@ class RoutingSystemMasterGraph:
                     coord_source = adj_list[router_name_source][0].routable_device_coordinates
                     coord_dest = adj_list[router_name_destination][0].routable_device_coordinates
                     if self._scan_area_for_connected_devices(coord_source, coord_dest):
-                        device_channel = channel.ChannelSystemNode(self._global_channel_id)
-                        self._global_channel_id += 1
-                        adj_list[router_name_source][1][router_name_destination] = device_channel
-                        adj_list[router_name_destination][1][router_name_source] = device_channel
+                        adj_list[router_name_source][1].add(router_name_destination)
+                        adj_list[router_name_destination][1].add(router_name_source)
         return adj_list  
         
     def _scan_area_for_connected_devices(self, coord_source, coord_dest):

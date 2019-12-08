@@ -22,11 +22,11 @@ class Channels:
     
     @validate_amount
     def __init__(self, amount, transmission_radius):
-        self.transmission_radius = transmission_radius
-        self.channels = [numpy.random.exponential() for _ in range(amount)]
+        self._transmission_radius = transmission_radius
+        self._channels = [numpy.random.exponential() for _ in range(amount)]
         
     def __repr__(self):
-        chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self.channels)])
+        chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self._channels)])
         return "Channels({})".format(chan_str)
     
     @validate_path   
@@ -66,10 +66,10 @@ class Channels:
         """
         def find_paths(coor_path, curr, output, blocked_channels):
             if len(curr) == len(coor_path) - 1:
-                weight = get_weight(curr, self.channels)
+                weight = get_weight(curr, self._channels)
                 output.add_task((weight, curr.copy()))
                 return
-            for chan_num, _ in enumerate(self.channels):
+            for chan_num, _ in enumerate(self._channels):
                 available_channels = self._check_available_channels(blocked_channels,
                                                                     coor_path[len(curr)])
                 if chan_num in available_channels:
@@ -91,14 +91,14 @@ class Channels:
         for blocked_chan in blocked_channels:
             curr_coor_x, curr_coor_y = curr_coor
             block_coor_x, block_coor_y = blocked_chan.chan_coor
-            if (abs(curr_coor_x - block_coor_x) <= self.transmission_radius and
-                abs(curr_coor_y - block_coor_y) <= self.transmission_radius):
+            if (abs(curr_coor_x - block_coor_x) <= self._transmission_radius and
+                abs(curr_coor_y - block_coor_y) <= self._transmission_radius):
                     # If we find a channel with interference we don't use the
                     # adjaceny channels either
                     dont_use_channels.add(blocked_chan.chan_used)
                     dont_use_channels.add(blocked_chan.chan_used - 1)
                     dont_use_channels.add(blocked_chan.chan_used + 1)
-        channels_total = set(i for i, _ in enumerate(self.channels))
+        channels_total = set(i for i, _ in enumerate(self._channels))
         return channels_total - dont_use_channels
         
 if __name__ == "__main__":

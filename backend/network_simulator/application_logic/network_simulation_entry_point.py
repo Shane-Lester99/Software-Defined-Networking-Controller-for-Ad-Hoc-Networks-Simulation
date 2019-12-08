@@ -11,9 +11,11 @@ def run_cli_in_main():
     print("This is the CLI version of the Network Routing Simulation.")
     print("To set up the network topology, write a list of 1 to 8 numbers.")
     print("Each number signifies how many user devices are associated with that base station.\n")
-    x = input("Please enter these numbers now as a single space seperated list:")
-    bs_list = [int(char) for char in x if char != " "]
-    entry = NetworkSimulationEntryPoint(bs_list)
+    bs_str = input("Please enter these numbers now as a single space seperated list:")
+    bs_list = [int(char) for char in bs_str if char != " "]
+    chan_amount_str = input("Please enter an amount of channels between 4 and 10:")
+    chan_amount = int(chan_amount_str)
+    entry = NetworkSimulationEntryPoint(bs_list, chan_amount)
     entry.run_cli()
 
 class NetworkSimulationEntryPoint:
@@ -25,11 +27,12 @@ class NetworkSimulationEntryPoint:
     To run the CLI version run the module from the main function
     """
     
-    def __init__(self, base_station_list):
+    def __init__(self, base_station_list, channel_amount):
         self._entry_grid = grid.Grid(base_station_list)
         self._entry_graph = graph.RoutingSystemMasterGraph(
             self._entry_grid.device_data,
-            self._entry_grid.TRANSMISSION_RADIUS)
+            self._entry_grid.TRANSMISSION_RADIUS,
+            channel_amount)
             
     def run_cli(self):
         """
@@ -40,14 +43,14 @@ class NetworkSimulationEntryPoint:
         """
         print(self._entry_grid)
         print(self.retrieve_random_graph_as_json())
-        while True:
-            exit_string = input("Would you like to specify a query path (Y/N):")
-            if exit_string == "N" or exit_string == "n":
-                print(self.retrieve_system_results_as_json())
-                break
-            x = input("Please specify query path in form <device_id_1><device_id2>:")
-            source, dest = x[:3], x[3:]
-            print(self.retrieve_query_results_as_json(source, dest))
+        # while True:
+        #     exit_string = input("Would you like to specify a query path (Y/N):")
+        #     if exit_string == "N" or exit_string == "n":
+        #         print(self.retrieve_system_results_as_json())
+        #         break
+        #     x = input("Please specify query path in form <device_id_1><device_id2>:")
+        #     source, dest = x[:3], x[3:]
+        #     print(self.retrieve_query_results_as_json(source, dest))
             
     def retrieve_random_graph_as_json(self):
         """
@@ -75,8 +78,7 @@ class NetworkSimulationEntryPoint:
         for node_name, entries in self._entry_graph.graph.items():
             metadata = entries[0]
             connected_edges = entries[1]
-            string_connected_edges = {node_name: self._convert_channel_to_dict(channel) for node_name,
-                                      channel in connected_edges.items()}
+            string_connected_edges = [node_name for node_name in connected_edges]
             json_dict[node_name] = {
                  "metadata": {
                      "base_station_name": metadata.base_station_name,
