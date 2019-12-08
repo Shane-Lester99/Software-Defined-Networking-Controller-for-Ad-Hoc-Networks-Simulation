@@ -99,11 +99,11 @@ class Channels:
                     dont_use_channels.add(blocked_chan.chan_used - 1)
                     dont_use_channels.add(blocked_chan.chan_used + 1)
         channels_total = set(i for i, _ in enumerate(self.channels))
-        return list(channels_total - dont_use_channels)
+        return channels_total - dont_use_channels
         
 if __name__ == "__main__":
     sys_channels = Channels(5, 2)
-    path = [(0,2), (2,3), (3,5)]
+    path = [(0,2), (2,3), (3,5), (5,7), (7,7)]
     global_intf = []
     x = sys_channels.find_cheapest_channels_for_path(global_intf, path)
     print(x)
