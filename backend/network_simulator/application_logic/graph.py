@@ -154,6 +154,8 @@ class RoutingSystemMasterGraph:
         output = PriorityQueue()
         while stack:
             curr_path = stack.pop()
+            if len(curr_path) > 7:
+                continue
             if curr_path[len(curr_path)-1] == dest:
                 path_value = float(len(curr_path) - 1) + calc_interference()
                 output.add_task((path_value, curr_path))
