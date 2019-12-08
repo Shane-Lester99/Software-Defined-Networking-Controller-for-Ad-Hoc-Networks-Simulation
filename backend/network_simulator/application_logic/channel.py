@@ -23,7 +23,11 @@ class Channels:
         return "Channels({})".format(chan_str)
     
     @validate_path   
-    def find_all_possible_channels_for_path(self, global_interference, coor_path):
+    def find_cheapest_channels_for_path(self, global_interference, coor_path):
+        """
+        This will return the cheapest channel combination for a given path subject
+        to interference globally and from the path
+        """
         def find_paths(coor_path, curr, output, blocked_channels):
             if len(curr) == len(coor_path) - 1:
                 weight = get_weight(curr, self.channels)
@@ -40,8 +44,8 @@ class Channels:
                     blocked_channels.pop()
                     curr.pop()
         output = priority_queue.PriorityQueue()
-        find_paths(coor_path, [], output, [])
-        return output
+        find_paths(coor_path, [], output, global_interference)
+        return output[0]
     
     def _check_available_channels(self, blocked_channels, curr_coor):
         """
@@ -64,8 +68,8 @@ class Channels:
 if __name__ == "__main__":
     sys_channels = Channels(5, 2)
     path = [(0,2), (2,3), (3,5)]
-    global_intf = None
-    x = sys_channels.find_all_possible_channels_for_path(global_intf, path)
+    global_intf = []
+    x = sys_channels.find_cheapest_channels_for_path(global_intf, path)
     print(x)
     # x = [blocked_channel_entry((6,5), 0), blocked_channel_entry((6,6), 2), blocked_channel_entry((7,8), 4)]
     # print(sys_channels._check_available_channels(x, (6,8)))
