@@ -20,7 +20,7 @@ class RoutingSystemMasterGraph:
         # router coordinates, and the dictionary is the edges connected to the device.
         # The channel represents the weight of the edge
         self.channels = Channels(channel_amount, transmission_radius)
-        self.clogged_channels = []
+        self._global_interference = []
         self._transmission_radius = transmission_radius
         self.graph = self._generate_graph(base_station_map)
         # timestamp is key with output data as value
@@ -121,6 +121,15 @@ class RoutingSystemMasterGraph:
             channels are now clogged
         """
         candidate_path_pq = self._find_candidate_paths(source, dest)
+        # TODO: For now just pick minimum amount of hops, will optimize for 
+        # global interference later
+        chosen_path_nodes = candidate_path_pq.pop_task()[1]
+        chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
+                                   for node in chosen_path_nodes]
+        print(chosen_path_coordinates)
+        id_mapping = self.channels.find_cheapest_channels_for_path(self._global_interference,
+                                                                   chosen_path_coordinates)
+        print(id_mapping)
         return candidate_path_pq
     
     def _find_candidate_paths(self, source, dest):

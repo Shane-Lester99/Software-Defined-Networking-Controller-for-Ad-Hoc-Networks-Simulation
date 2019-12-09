@@ -79,8 +79,9 @@ class Channels:
                     find_paths(coor_path, curr, output, blocked_channels)
                     blocked_channels.pop()
                     curr.pop()
+        blocked_channels = global_interference.copy()
         output = priority_queue.PriorityQueue()
-        find_paths(coor_path, [], output, global_interference)
+        find_paths(coor_path, [], output, blocked_channels)
         return output[0]
     
     def _check_available_channels(self, blocked_channels, curr_coor):
