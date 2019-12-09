@@ -126,11 +126,10 @@ class RoutingSystemMasterGraph:
         chosen_path_nodes = candidate_path_pq.pop_task()[1]
         chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
                                    for node in chosen_path_nodes]
-        print(chosen_path_coordinates)
-        id_mapping = self.channels.find_cheapest_channels_for_path(self._global_interference,
-                                                                   chosen_path_coordinates)
-        print(id_mapping)
-        return candidate_path_pq
+        mapping_used = self.channels.find_cheapest_channels_for_path(self._global_interference,
+                                                                    chosen_path_coordinates)
+        self._global_interference.extend(mapping_used)
+        return mapping_used
     
     def _find_candidate_paths(self, source, dest):
         """

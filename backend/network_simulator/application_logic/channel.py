@@ -23,7 +23,7 @@ class Channels:
     @validate_amount
     def __init__(self, amount, transmission_radius):
         self._transmission_radius = transmission_radius
-        self._channels = [numpy.random.exponential() for _ in range(amount)]
+        self._channels = [round(numpy.random.exponential(), 4) for _ in range(amount)]
         
     def __repr__(self):
         chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self._channels)])
@@ -82,7 +82,13 @@ class Channels:
         blocked_channels = global_interference.copy()
         output = priority_queue.PriorityQueue()
         find_paths(coor_path, [], output, blocked_channels)
-        return output[0]
+        final_path_used = []
+        use_allocation = output.pop_task()[1]
+        for i, channel_used in enumerate(use_allocation):
+            b0 = blocked_channel_entry(coor_path[i], channel_used)
+            b1 = blocked_channel_entry(coor_path[i+1], channel_used)
+            final_path_used.extend([b0, b1])
+        return final_path_used
     
     def _check_available_channels(self, blocked_channels, curr_coor):
         """

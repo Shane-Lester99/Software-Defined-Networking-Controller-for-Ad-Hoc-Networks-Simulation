@@ -42,6 +42,7 @@ class NetworkSimulationEntryPoint:
         for backend debugging.
         """
         print(self._entry_grid)
+        print(self._entry_graph.channels)
         print(self.retrieve_random_graph_as_json())
         while True:
             exit_string = input("Would you like to specify a query path (Y/N):")
