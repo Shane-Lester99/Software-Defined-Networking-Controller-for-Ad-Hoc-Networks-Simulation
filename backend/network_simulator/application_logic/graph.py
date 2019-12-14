@@ -92,16 +92,16 @@ class RoutingSystemMasterGraph:
             channels are now clogged
         """
         candidate_path_pq = self._find_candidate_paths(source, dest)
-        # TODO: For now just pick minimum amount of hops, will test and tune to see
-        # best way to use these algorithms
         if not candidate_path_pq:
             return {}
+        # TODO: we shouldn't just pop the first path, we need to modify the scheme
+        # so we try some amount of paths with minumum interference and the one
+        # with the minimum amount of hops
         chosen_path_nodes = candidate_path_pq.pop_task()[1]
         chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
                                    for node in chosen_path_nodes]
         global_blockage = self.channels.find_cheapest_channels_for_path(self._clogged_at_node,
                                                                         chosen_path_coordinates)
-        #self._global_interference.extend(global_blockage)
         if not global_blockage:
             return {}
         change_coor_to_key = lambda x: str(x[0]) + "_" + str(x[1])
@@ -117,7 +117,6 @@ class RoutingSystemMasterGraph:
             self._clogged_at_node[node][0] = coors
             self._clogged_at_node[node][1].extend(chan_used)
             output_route[node] = chan_used
-        print(self._clogged_at_node)
         return output_route
     
     def _find_candidate_paths(self, source, dest):
