@@ -23,10 +23,10 @@ class Channels:
     @validate_amount
     def __init__(self, amount, transmission_radius):
         self._transmission_radius = transmission_radius
-        self._channels = [round(numpy.random.exponential(), 4) for _ in range(amount)]
+        self.channels = [round(numpy.random.exponential(), 4) for _ in range(amount)]
         
     def __repr__(self):
-        chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self._channels)])
+        chan_str = str(["Channel {}: {}".format(i, exp) for i, exp in enumerate(self.channels)])
         return "Channels({})".format(chan_str)
     
     @validate_path   
@@ -61,15 +61,16 @@ class Channels:
         transmission radius of another node and the two adjacent channels to that
         used channel. 
         
-        We then store each path candidate in a priority queue and return the top
-        value, which is the cheapest path.
+        We then store each path candidate in a priority queue with values filtered such that
+        we have all the candidate paths that are either the minimum number of hops or the least
+        amount of channel interference
         """
         def find_paths(coor_path, curr, output, blocked_channels):
             if len(curr) == len(coor_path) - 1:
-                weight = get_weight(curr, self._channels)
+                weight = get_weight(curr, self.channels)
                 output.add_task((weight, curr.copy()))
                 return
-            for chan_num, _ in enumerate(self._channels):
+            for chan_num, _ in enumerate(self.channels):
                 available_channels = self._check_available_channels(blocked_channels,
                                                                     coor_path[len(curr)])
                 if chan_num in available_channels:
@@ -107,7 +108,7 @@ class Channels:
                     dont_use_channels.add(blocked_chan.chan_used)
                     dont_use_channels.add(blocked_chan.chan_used - 1)
                     dont_use_channels.add(blocked_chan.chan_used + 1)
-        channels_total = set(i for i, _ in enumerate(self._channels))
+        channels_total = set(i for i, _ in enumerate(self.channels))
         return channels_total - dont_use_channels
         
     def _create_blocked_ds(self, global_interference):

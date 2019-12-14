@@ -6,6 +6,9 @@ from datetime import datetime
 create_best_route = namedtuple("BestRoute", "cost best_route")
 create_stat_package = namedtuple("StatPackage", "cost best_route exp_results")
 
+def change_coor_to_key(coor_pair):
+    return str(coor_pair[0]) + "_" + str(coor_pair[1])
+
 class RoutingSystemMasterGraph:
     """
     Routing system graph. The graph is fed data by a base_station_map (which 
@@ -104,7 +107,7 @@ class RoutingSystemMasterGraph:
                                                                         chosen_path_coordinates)
         if not global_blockage:
             return {}
-        change_coor_to_key = lambda x: str(x[0]) + "_" + str(x[1])
+       
         path_chosen_data = defaultdict(list)
         for blocked_chan_record in global_blockage:
             chan_coor = change_coor_to_key(blocked_chan_record.chan_coor)
@@ -117,6 +120,7 @@ class RoutingSystemMasterGraph:
             self._clogged_at_node[node][0] = coors
             self._clogged_at_node[node][1].extend(chan_used)
             output_route[node] = chan_used
+        print(self._clogged_at_node)
         return output_route
     
     def _find_candidate_paths(self, source, dest):
@@ -139,9 +143,23 @@ class RoutingSystemMasterGraph:
         - We add a value to a path in a stack if that connected edge isn't already in
             path
         """
-        def calc_interference():
-            # TODO: Fill this in
-            return 0.0
+        def calc_interference(node_path):
+            """
+            We will add total_path_interference / 100 to the the path value
+            """
+            # node_coordinates = change_coor_to_key(
+            #                     self.graph[node_label].routable_device_coordinates
+            #                   )
+            blockage_sum = 0
+            channel_list = list()
+            for node_label in node_path:
+                if self._clogged_at_node.get(node_label):
+                    channels_used = self._clogged_at_node[node_label][1]
+                    channel_list.extend([self.channels.channels[chan_num] 
+                                         for chan_num in 
+                                         self._clogged_at_node[node_label][1]])
+            return 0
+            return sum(channel_list) / 1000
         if source not in self.graph or dest not in self.graph:
             return list()
         # visited = {node_name: False for node_name in self.graph.keys()}
@@ -153,7 +171,7 @@ class RoutingSystemMasterGraph:
             if len(curr_path) > 7:
                 continue
             if curr_path[len(curr_path)-1] == dest:
-                path_value = float(len(curr_path) - 1) + calc_interference()
+                path_value = float(len(curr_path) - 1) + calc_interference(curr_path)
                 output.add_task((path_value, curr_path))
                 continue
             for connected_node in self.graph[curr_path[len(curr_path)-1]][1]:
