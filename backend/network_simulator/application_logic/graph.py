@@ -100,11 +100,15 @@ class RoutingSystemMasterGraph:
         # TODO: we shouldn't just pop the first path, we need to modify the scheme
         # so we try some amount of paths with minumum interference and the one
         # with the minimum amount of hops
-        chosen_path_nodes = candidate_path_pq.pop_task()[1]
-        chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
-                                   for node in chosen_path_nodes]
-        global_blockage = self.channels.find_cheapest_channels_for_path(self._clogged_at_node,
-                                                                        chosen_path_coordinates)
+        while candidate_path_pq:
+            chosen_path_nodes = candidate_path_pq.pop_task()[1]
+            chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
+                                       for node in chosen_path_nodes]
+            global_blockage = self.channels.find_cheapest_channels_for_path(self._clogged_at_node,
+                                                                            chosen_path_coordinates)
+            if global_blockage:
+                break
+            
         if not global_blockage:
             return {}
        
@@ -120,7 +124,6 @@ class RoutingSystemMasterGraph:
             self._clogged_at_node[node][0] = coors
             self._clogged_at_node[node][1].extend(chan_used)
             output_route[node] = chan_used
-        print(self._clogged_at_node)
         return output_route
     
     def _find_candidate_paths(self, source, dest):
@@ -158,7 +161,6 @@ class RoutingSystemMasterGraph:
                     channel_list.extend([self.channels.channels[chan_num] 
                                          for chan_num in 
                                          self._clogged_at_node[node_label][1]])
-            return 0
             return sum(channel_list) / 1000
         if source not in self.graph or dest not in self.graph:
             return list()
