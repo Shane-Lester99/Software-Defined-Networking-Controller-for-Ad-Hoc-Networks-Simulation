@@ -94,10 +94,10 @@ class NetworkSimulationEntryPoint:
         """
         The API allows for running a single query, and this will be the output.
         """
-        stat_pkg = self._entry_graph.retrieve_optimal_path_and_allocate_channels(
+        route = self._entry_graph.retrieve_optimal_path_and_allocate_channels(
                                                                     source_node,
                                                                     dest_node)
-        print(stat_pkg)
+        return json.dumps(route)
         # if stat_pkg[1] == -1:
         #     return json.dumps({})
         # json_dict = dict()

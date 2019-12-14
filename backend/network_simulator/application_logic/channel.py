@@ -79,7 +79,7 @@ class Channels:
                     find_paths(coor_path, curr, output, blocked_channels)
                     blocked_channels.pop()
                     curr.pop()
-        blocked_channels = global_interference.copy()
+        blocked_channels = self._create_blocked_ds(global_interference)
         output = priority_queue.PriorityQueue()
         find_paths(coor_path, [], output, blocked_channels)
         final_path_used = []
@@ -108,6 +108,18 @@ class Channels:
         channels_total = set(i for i, _ in enumerate(self._channels))
         return channels_total - dont_use_channels
         
+    def _create_blocked_ds(self, global_interference):
+        """
+        This will create an array of blocked_channel_entry objects out of
+        a map of device ids to coordinates and a list of channels clogged
+        """
+        globally_blocked_channels = list()
+        for key, value in global_interference.items():
+            coors, chan_used_list = value[0], value[1]
+            globally_blocked_channels.extend([blocked_channel_entry(coors, chan_used) 
+                                              for chan_used in chan_used_list])
+        return globally_blocked_channels
+       
 if __name__ == "__main__":
     sys_channels = Channels(5, 2)
     path = [(0,2), (2,3), (3,5), (5,7), (7,7)]

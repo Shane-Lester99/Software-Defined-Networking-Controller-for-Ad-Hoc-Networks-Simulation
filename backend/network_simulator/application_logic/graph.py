@@ -1,5 +1,5 @@
 from channel import Channels
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from priority_queue import PriorityQueue
 from datetime import datetime
 
@@ -20,7 +20,11 @@ class RoutingSystemMasterGraph:
         # router coordinates, and the dictionary is the edges connected to the device.
         # The channel represents the weight of the edge
         self.channels = Channels(channel_amount, transmission_radius)
-        self._global_interference = []
+        # clogged_at_node is a global interference map. It defaults to
+        # -1, -1 as the coordinates and a list with no channels. Once
+        # we run a route, we will have a user device which maps to the
+        # coordinates and to the channels that have interference
+        self._clogged_at_node = defaultdict(lambda: [[-1,-1], []])
         self._transmission_radius = transmission_radius
         self.graph = self._generate_graph(base_station_map)
         # timestamp is key with output data as value
@@ -38,39 +42,6 @@ class RoutingSystemMasterGraph:
                 for (dest_device_name) in edges[1]]) + "\n")
         return repr_str
         
-    # def query_for_optimal_route(self, device_name_source, device_name_dest):
-    #     """
-    #     Finds the shortest path between the source and destination by first
-    #     running a breadth first search to create a set of all the reachable nodes.
-    #     If the destination is there we can run the shortest path on this subset
-    #     of the graph. We can then return a data structure containing all the 
-    #     stats from this run and save it in our system stats.
-    #     """
-    #     reachable_nodes_set = self._bfs(device_name_source)
-    #     if device_name_dest not in reachable_nodes_set:
-    #         failed_exp_time = str(datetime.now())
-    #         return failed_exp_time, -1
-    #     graph_subset = ({key: value for (key, value) in self.graph.items()
-    #                       if key in reachable_nodes_set})
-    #     # If we have paths that exist for this query, then we will use this
-    #     # subset of the graph for our shortest path algorithm
-         
-    #     # This will feed our shortest path algorithm only the needed graph subset
-    #     # Which will make dijkstra more straightfoward to implement
-        
-    #     best_route = self._calc_shortest_path(graph_subset,
-    #                                           device_name_source,
-    #                                           device_name_dest)
-    #     exp_time = str(datetime.now())
-    #     if best_route.best_route:
-    #         output_stats = create_stat_package(best_route.cost,
-    #                                           best_route.best_route,
-    #                                           self._run_simulation(best_route)
-    #                                           )
-    #         self.sys_stats[exp_time] = output_stats
-    #         return exp_time, output_stats
-    #     return exp_time, -1
-    
     def _generate_graph(self, base_station_map):
         """
         Generates the adjanency list used to model the graph for the network
@@ -121,15 +92,25 @@ class RoutingSystemMasterGraph:
             channels are now clogged
         """
         candidate_path_pq = self._find_candidate_paths(source, dest)
-        # TODO: For now just pick minimum amount of hops, will optimize for 
-        # global interference later
+        # TODO: For now just pick minimum amount of hops, will test and tune to see
+        # best way to use these algorithms
+        if not candidate_path_pq:
+            return {}
         chosen_path_nodes = candidate_path_pq.pop_task()[1]
         chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
                                    for node in chosen_path_nodes]
-        mapping_used = self.channels.find_cheapest_channels_for_path(self._global_interference,
-                                                                    chosen_path_coordinates)
-        self._global_interference.extend(mapping_used)
-        return mapping_used
+        global_blockage = self.channels.find_cheapest_channels_for_path(self._clogged_at_node,
+                                                                        chosen_path_coordinates)
+        #self._global_interference.extend(global_blockage)
+        change_coor_to_key = lambda x: str(x[0]) + "_" + str(x[1])
+        path_chosen_data = {change_coor_to_key(blocked_chan.chan_coor): blocked_chan.chan_used
+                            for blocked_chan in global_blockage}
+        for node in chosen_path_nodes:
+            coors = self.graph[node][0].routable_device_coordinates
+            chan_used = path_chosen_data[change_coor_to_key(coors)]
+            self._clogged_at_node[node][0] = coors
+            self._clogged_at_node[node][1].append(chan_used)
+        return path_chosen_data
     
     def _find_candidate_paths(self, source, dest):
         """
@@ -174,103 +155,3 @@ class RoutingSystemMasterGraph:
                     temp_curr_path.append(connected_node)
                     stack.append(temp_curr_path)
         return output
-        
-    # def _find_all_paths(self, source, dest):
-    #     """
-    #     Runs breadth first search on a graph to find all paths between source and
-    #     destination. Stores them in a priority queue based on hops and 
-    #     """
-    #     if node not in self.graph:
-    #         return set()
-    #     reachable_nodes = set()
-    #     visited = {node_name: False for node_name in self.graph.keys()}
-    #     queue = [node]
-    #     visited[node] = True
-    #     while queue:
-    #         curr_node = queue.pop()
-    #         reachable_nodes.add(curr_node)
-    #         for pot_new_node in self.graph[curr_node][1]:
-    #             if visited[pot_new_node] == False:
-    #                 queue.append(pot_new_node)
-    #                 visited[pot_new_node] = True
-    #     return reachable_nodes 
-        
-    # def _calc_shortest_path(self, graph_subset, source_node, dest_node):
-    #     """
-    #     Runs the shortest path algorithm on a graph subset. Outputs a list of the
-    #     best path. Assume our graph subset is all nodes reachable from our source and
-    #     our destination node is one of them
-    #     """
-    #     def create_input_for_pq(node_1, node_2):
-    #         return (graph_subset[node_1][1][node_2].channel_weight, node_2)
-    #     # Creating the initial data structure of {node: {distance_from_source: <float>,
-    #     # prev_node: <str>}} and other ds for dijkstra
-    #     DISTANCE_KEY = "shortest_distance_from_source"
-    #     PREVIOUS_VERTEX_KEY = "previous_vertex"
-    #     shortest_path_info = ({device_names: {DISTANCE_KEY: float("inf"), 
-    #         PREVIOUS_VERTEX_KEY: None} for device_names in graph_subset.keys()})
-    #     visited = {key:False for key in graph_subset.keys()}
-    #     shortest_path_info[source_node][DISTANCE_KEY] = 0
-    #     visited[source_node] = True
-    #     # Begin dijkstra
-    #     pq = PriorityQueue()
-    #     pq.add_task((0.0, source_node))
-    #     while pq:
-    #         new_node = pq.pop_task()[1]
-    #         visited[new_node] = True
-    #         for connected_node in graph_subset[new_node][1]:
-    #             if not visited[connected_node]:
-    #                 pq_input = create_input_for_pq(new_node, connected_node)
-    #                 new_dist = pq_input[0] + shortest_path_info[new_node][DISTANCE_KEY]
-    #                 if new_dist < shortest_path_info[connected_node][DISTANCE_KEY]:
-    #                     shortest_path_info[connected_node][DISTANCE_KEY] = new_dist
-    #                     shortest_path_info[connected_node][PREVIOUS_VERTEX_KEY] = new_node
-    #                 pq.add_task(pq_input)
-    #     # Checks if ther is an optimal path (There always should be one)
-    #     if shortest_path_info[dest_node][PREVIOUS_VERTEX_KEY] != None:
-    #         best_route = create_best_route(
-    #                       shortest_path_info[dest_node][DISTANCE_KEY],
-    #                       [dest_node]
-    #                     )
-    #         curr_node = shortest_path_info[dest_node][PREVIOUS_VERTEX_KEY]
-    #         while True:
-    #             best_route.best_route.append(curr_node)
-    #             if curr_node == source_node:
-    #                 break
-    #             curr_node = shortest_path_info[curr_node][PREVIOUS_VERTEX_KEY]
-    #         best_route.best_route.reverse()
-    #     else:
-    #         # In case of bugs or unexpected behavior, this will make it easier to
-    #         # debug. This should never execute.
-    #         best_route = create_best_route(-1, None)
-    #     return best_route
-    
-    # def _run_simulation(self, best_route):
-    #     """
-    #     Runs a single routing simulation given a shortest path and outputs the stats of
-    #     that path being taken (i.e. what channels are used and the results of
-    #     the selected channels)
-    #     Our stats data structure will be:
-    #     [RouteData(nodes:(node_1, node_2), channel:channel_string,
-    #         channel_data:channels_selection), ...]
-    #     """
-    #     def get_channel_obj(source, dest):
-    #         """
-    #         Given two adjacent nodes, return there edge (which is a channel obj)
-    #         """
-    #         return self.graph[source][1][dest]
-    #     results = list()
-    #     output_stat_record = namedtuple("RouteData", "nodes channel channel_selection")
-    #     prev_node = best_route.best_route[0]
-    #     for next_node_id in range(1, len(best_route.best_route)):
-    #         next_node = best_route.best_route[next_node_id]
-    #         chan = get_channel_obj(prev_node, next_node)
-    #         curr_test = output_stat_record((prev_node, next_node), chan, [])
-    #         sel = chan.choose_channel_and_report_result()
-    #         curr_test.channel_selection.append(sel)
-    #         while not sel.had_success:
-    #             sel = chan.choose_channel_and_report_result()
-    #             curr_test.channel_selection.append(sel)
-    #         results.append(curr_test)
-    #         prev_node = next_node
-    #     return results
