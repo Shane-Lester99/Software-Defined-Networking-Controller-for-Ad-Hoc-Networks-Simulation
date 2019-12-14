@@ -50,9 +50,6 @@ class RoutingSystemMasterGraph:
         Generates the adjanency list used to model the graph for the network
         routing system. 
         """
-        # Create adj list beginning structure of adj_list = {routable_name: 
-        # RoutableDeviceEntry(base_station_name, base_station_coordinates,
-        # routable_device_coordinated)}
         adj_list = {}
         for base_station_name in base_station_map:
             create_device_entry = namedtuple("RoutableDeviceEntry",
