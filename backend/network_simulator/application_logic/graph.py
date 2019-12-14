@@ -105,14 +105,20 @@ class RoutingSystemMasterGraph:
         if not global_blockage:
             return {}
         change_coor_to_key = lambda x: str(x[0]) + "_" + str(x[1])
-        path_chosen_data = {change_coor_to_key(blocked_chan.chan_coor): blocked_chan.chan_used
-                            for blocked_chan in global_blockage}
+        path_chosen_data = defaultdict(list)
+        for blocked_chan_record in global_blockage:
+            chan_coor = change_coor_to_key(blocked_chan_record.chan_coor)
+            chan_used = blocked_chan_record.chan_used
+            path_chosen_data[chan_coor].append(chan_used)
+        output_route = dict()
         for node in chosen_path_nodes:
             coors = self.graph[node][0].routable_device_coordinates
             chan_used = path_chosen_data[change_coor_to_key(coors)]
             self._clogged_at_node[node][0] = coors
-            self._clogged_at_node[node][1].append(chan_used)
-        return path_chosen_data
+            self._clogged_at_node[node][1].extend(chan_used)
+            output_route[node] = chan_used
+        print(self._clogged_at_node)
+        return output_route
     
     def _find_candidate_paths(self, source, dest):
         """
