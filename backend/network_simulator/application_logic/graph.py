@@ -64,9 +64,7 @@ class RoutingSystemMasterGraph:
                         base_station_map[base_station_name].base_station_coordinates,
                         routable_device.coordinates
                     ), set(),)
-        # Now add in all the edges to the adjacency list so we will have:
-        # adj_list = {RoutableDeviceName: (RoutableDeviceEntry(),
-        # [{connected_router: channel_edge}])}
+        # Now add in all the edges to the adjacency list
         for router_name_source in adj_list.keys():
             for router_name_destination in adj_list.keys():
                 if router_name_destination != router_name_source:
@@ -97,9 +95,6 @@ class RoutingSystemMasterGraph:
         candidate_path_pq = self._find_candidate_paths(source, dest)
         if not candidate_path_pq:
             return {}
-        # TODO: we shouldn't just pop the first path, we need to modify the scheme
-        # so we try some amount of paths with minumum interference and the one
-        # with the minimum amount of hops
         while candidate_path_pq:
             chosen_path_nodes = candidate_path_pq.pop_task()[1]
             chosen_path_coordinates = [self.graph[node][0].routable_device_coordinates 
@@ -148,11 +143,20 @@ class RoutingSystemMasterGraph:
         """
         def calc_interference(node_path):
             """
-            We will add total_path_interference / 100 to the the path value
+            The purpose of this function is to give the best possible path the lowest weight so
+            it will show up first in the min priority queue
+            
+            We will add 1 - (total_path_interference / 100000) to the the path value. The
+            reason is to make paths with lower weights show up in the priority queue
+            first.
+            
+            E.g. If we have to possible routes with channels (0: 0.8, 1: 1.0, 2: 1.2)
+            and we select 0 and 2 for the first it will have a summed value of 2.0 and 1 and 2
+            would have a cost of 2.2 . We add 1 for each hop. So we would like for the path
+            with interference 1 and 2 to show up before 0 and 2 (because then we can use 0)
+            so we do: 2 + (1-(2.2/100000)) > 2 + (1 - (2.0/ 100000)), so path 1,2 will appear
+            in our priority queue ahead of 0 2 which is what we aimed for.
             """
-            # node_coordinates = change_coor_to_key(
-            #                     self.graph[node_label].routable_device_coordinates
-            #                   )
             blockage_sum = 0
             channel_list = list()
             for node_label in node_path:
@@ -161,10 +165,9 @@ class RoutingSystemMasterGraph:
                     channel_list.extend([self.channels.channels[chan_num] 
                                          for chan_num in 
                                          self._clogged_at_node[node_label][1]])
-            return sum(channel_list) / 1000
+            return (1 - sum(channel_list) / 100000)
         if source not in self.graph or dest not in self.graph:
             return list()
-        # visited = {node_name: False for node_name in self.graph.keys()}
         stack = list()
         stack.append([source])
         output = PriorityQueue()

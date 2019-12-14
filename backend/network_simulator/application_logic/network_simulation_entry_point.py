@@ -98,11 +98,6 @@ class NetworkSimulationEntryPoint:
                                                                     source_node,
                                                                     dest_node)
         return json.dumps(route)
-        # if stat_pkg[1] == -1:
-        #     return json.dumps({})
-        # json_dict = dict()
-        # json_dict = self._convert_one_query_stat_block_to_json(json_dict, stat_pkg)
-        # return json.dumps(json_dict)
     
     def retrieve_system_results_as_json(self):
         """
