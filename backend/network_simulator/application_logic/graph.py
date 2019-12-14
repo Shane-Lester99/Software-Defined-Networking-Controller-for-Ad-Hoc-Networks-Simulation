@@ -102,6 +102,8 @@ class RoutingSystemMasterGraph:
         global_blockage = self.channels.find_cheapest_channels_for_path(self._clogged_at_node,
                                                                         chosen_path_coordinates)
         #self._global_interference.extend(global_blockage)
+        if not global_blockage:
+            return {}
         change_coor_to_key = lambda x: str(x[0]) + "_" + str(x[1])
         path_chosen_data = {change_coor_to_key(blocked_chan.chan_coor): blocked_chan.chan_used
                             for blocked_chan in global_blockage}

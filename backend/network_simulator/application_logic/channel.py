@@ -83,6 +83,8 @@ class Channels:
         output = priority_queue.PriorityQueue()
         find_paths(coor_path, [], output, blocked_channels)
         final_path_used = []
+        if not output:
+            return list()
         use_allocation = output.pop_task()[1]
         for i, channel_used in enumerate(use_allocation):
             b0 = blocked_channel_entry(coor_path[i], channel_used)
