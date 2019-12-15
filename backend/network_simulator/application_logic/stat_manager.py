@@ -29,16 +29,24 @@ class StatManager:
     NODE_HOP = "node_hop"
     
     
-    def ___init___(self):
+    def __init__(self):
         self.stats = {
-            self.CHAN_SWITCH : defaultdict(list),
-            self.CHAN_HOP: defaultdict(list),
-            self.NODE_SWITCH: defaultdict(list),
-            self.NODE_HOP: defaultdict(list)
+            self.CHAN_SWITCH : defaultdict(lambda: defaultdict(list)),
+            self.CHAN_HOP: defaultdict(lambda: defaultdict(list)),
+            self.NODE_SWITCH: defaultdict(lambda: defaultdict(list)),
+            self.NODE_HOP: defaultdict(lambda: defaultdict(list))
         }
         
     def __repr__(self):
-        return "StatManager(Channels/Switches(...), Channels/Hops(...), Nodes/Switches(...), Nodes/Hops(...)"
+        repr_str = "***StatManager***"
+        for chart_name, chart in self.stats.items():
+            repr_str = repr_str + "\n" + chart_name
+            for constants, data in chart.items():
+                repr_str = repr_str + "\n\tConstants: " + constants + ":\n"
+                repr_str = repr_str + "\t" + str([str("x: " + str(key) +  ", y: "
+                                                  + str(value)) for key, value
+                                                  in data.items()])
+        return repr_str
     
     def collect_stats_from_route_data(self, num_channels, num_nodes,
                                       num_hops, num_switches):
@@ -62,8 +70,10 @@ class StatManager:
         
         # NODE_HOP chart
         node_hop_key = gen_key(num_channels, num_switches)
-        self.stats[self.NODE_HOP][node_switch_key][str(num_nodes)].append(num_hops)
+        self.stats[self.NODE_HOP][node_hop_key][str(num_nodes)].append(num_hops)
         
 if __name__ == "__main__":
     x = StatManager()
+    x.collect_stats_from_route_data(10, 11, 12, 13)
+    x.collect_stats_from_route_data(10, 11, 22, 13)
     print(x)
