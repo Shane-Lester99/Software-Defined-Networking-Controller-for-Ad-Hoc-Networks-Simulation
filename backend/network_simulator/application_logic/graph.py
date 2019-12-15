@@ -30,9 +30,7 @@ class RoutingSystemMasterGraph:
         self._clogged_at_node = defaultdict(lambda: [[-1,-1], []])
         self._transmission_radius = transmission_radius
         self.graph = self._generate_graph(base_station_map)
-        # timestamp is key with output data as value
-        self.sys_stats = {}
-    
+        
     def __repr__(self):
         repr_str = "***Graph of Network Routing System***\n"
         for source_device_name, edges in self.graph.items():
@@ -44,6 +42,9 @@ class RoutingSystemMasterGraph:
             repr_str = (repr_str + str(["(DeviceName:{})".format(dest_device_name) 
                 for (dest_device_name) in edges[1]]) + "\n")
         return repr_str
+        
+    def __len__(self):
+        return len(self.graph)
         
     def _generate_graph(self, base_station_map):
         """

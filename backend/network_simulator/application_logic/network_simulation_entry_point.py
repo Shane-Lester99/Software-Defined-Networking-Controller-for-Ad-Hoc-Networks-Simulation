@@ -23,11 +23,20 @@ class NetworkSimulationEntryPoint:
     Entry point of NetworkSimulation application. It provides an 
     interface over the application modules and returns the results as JSON.
     It also allows for backend debugging with a CLI version of the application.
+    Lastly, it collects the stats for each run.
     
     To run the CLI version run the module from the main function
     """
     
     def __init__(self, base_station_list, channel_amount):
+        # nodes on the x axis by number, and it will map to channel switches and
+        # number of hops of the y axis
+        # number of channels on the x axis with channel switches and hops on the
+        # y axis
+        self._sys_stats = {
+            "nodes": {},
+            "channels": {}
+        }
         self._entry_grid = grid.Grid(base_station_list)
         self._entry_graph = graph.RoutingSystemMasterGraph(
             self._entry_grid.device_data,
@@ -52,6 +61,9 @@ class NetworkSimulationEntryPoint:
             x = input("Please specify query path in form <device_id_1><device_id2>:")
             source, dest = x[:3], x[3:]
             print(self.retrieve_query_results_as_json(source, dest))
+            
+    def retrieve_channels_as_json(self):
+        return json.dumps(self._entry_graph.channels.channels)
             
     def retrieve_random_graph_as_json(self):
         """
@@ -97,84 +109,94 @@ class NetworkSimulationEntryPoint:
         route = self._entry_graph.retrieve_optimal_path_and_allocate_channels(
                                                                     source_node,
                                                                     dest_node)
+        number_of_channels = len(self._entry_graph.channels.channels)
+        number_of_nodes = len(self._entry_graph)
+        number_of_hops = len(route) - 1
+        number_of_channels_used = len(set([channel for channels_used in route.values() for channel in channels_used]))
+        if route:
+            print(number_of_channels, number_of_nodes, number_of_hops, number_of_channels_used)
         return json.dumps(route)
-    
+   
+   
     def retrieve_system_results_as_json(self):
-        """
-        The API allows for seeing all the results of all the queries.
-        """
-        json_dict = dict()
-        for date_str, stat_pkg in self._entry_graph.sys_stats.items():
-            self._convert_one_query_stat_block_to_json(json_dict,
-                                                       (date_str, stat_pkg,)
-                                                      )
-        return json.dumps(json_dict)
+        return self._sys_stats
     
-    def _convert_one_query_stat_block_to_json(self, json_dict, stat_pkg):
-        """
-        Converts statistics from query into a dictionary that can be converted
-        to json string by json.dumps. 
-        JSON is in form:
-        {
-            date_str: {
-                cost: <Float>,
-                path: <List>,
-                results: {
-                    R22_R02: {
-                        channel: {
-                            id: <int>
-                            weight: <float>
-                            channels: <List>
-                        },
-                        selections: [
-                            {
-                                had_success: <bool>,
-                                chan_selected: <int>,
-                                prob_success: <float>
-                            }, ...
-                        ]
-                    }
-                }
-            }, ...
-        }
-        This json string is used for both
-        self.retrieve_system.. and self.retrieve_query... . The only difference
-        is that the former contains all the values in the session and the 
-        latter contains just that particular query.
-        """
-        def parse_exp(result_list):
-            json_dict = dict()
-            for result in result_list:
-                node_key = result.nodes[0] + "_" + result.nodes[1]
-                channel = self._convert_channel_to_dict(result.channel)
-                channel_selections = \
-                    [
-                        {
-                            "had_success": chan_result.had_success,
-                            "chan_selected": chan_result.channel_selected,
-                            "prob_success": chan_result.prob_of_success
-                        } for chan_result in result.channel_selection
-                    ]
-                json_dict[node_key] = {
-                    "channel": channel,
-                    "selections": channel_selections
-                }
-            return json_dict
+    # def retrieve_system_results_as_json(self):
+    #     """
+    #     The API allows for seeing all the results of all the queries.
+    #     """
+    #     json_dict = dict()
+    #     for date_str, stat_pkg in self._entry_graph.sys_stats.items():
+    #         self._convert_one_query_stat_block_to_json(json_dict,
+    #                                                   (date_str, stat_pkg,)
+    #                                                   )
+    #     return json.dumps(json_dict)
+    
+    # def _convert_one_query_stat_block_to_json(self, json_dict, stat_pkg):
+    #     """
+    #     Converts statistics from query into a dictionary that can be converted
+    #     to json string by json.dumps. 
+    #     JSON is in form:
+    #     {
+    #         date_str: {
+    #             cost: <Float>,
+    #             path: <List>,
+    #             results: {
+    #                 R22_R02: {
+    #                     channel: {
+    #                         id: <int>
+    #                         weight: <float>
+    #                         channels: <List>
+    #                     },
+    #                     selections: [
+    #                         {
+    #                             had_success: <bool>,
+    #                             chan_selected: <int>,
+    #                             prob_success: <float>
+    #                         }, ...
+    #                     ]
+    #                 }
+    #             }
+    #         }, ...
+    #     }
+    #     This json string is used for both
+    #     self.retrieve_system.. and self.retrieve_query... . The only difference
+    #     is that the former contains all the values in the session and the 
+    #     latter contains just that particular query.
+    #     """
+    #     def parse_exp(result_list):
+    #         json_dict = dict()
+    #         for result in result_list:
+    #             node_key = result.nodes[0] + "_" + result.nodes[1]
+    #             channel = self._convert_channel_to_dict(result.channel)
+    #             channel_selections = \
+    #                 [
+    #                     {
+    #                         "had_success": chan_result.had_success,
+    #                         "chan_selected": chan_result.channel_selected,
+    #                         "prob_success": chan_result.prob_of_success
+    #                     } for chan_result in result.channel_selection
+    #                 ]
+    #             json_dict[node_key] = {
+    #                 "channel": channel,
+    #                 "selections": channel_selections
+    #             }
+    #         return json_dict
             
-        date_string, stat_block = stat_pkg
-        json_dict[date_string] = {
-            "cost": round(stat_block.cost,4),
-            "path": stat_block.best_route,
-            "results": parse_exp(stat_block.exp_results)
-        }
-        return json_dict
+    #     date_string, stat_block = stat_pkg
+    #     json_dict[date_string] = {
+    #         "cost": round(stat_block.cost,4),
+    #         "path": stat_block.best_route,
+    #         "results": parse_exp(stat_block.exp_results)
+    #     }
+    #     return json_dict
     
-    def _convert_channel_to_dict(self, chan):
-        return {
-            "id": chan.c_id,
-            "weight": chan.channel_weight,
-            "channels": chan.channel_system
-        }
+    # def _convert_channel_to_dict(self, chan):
+    #     return {
+    #         "id": chan.c_id,
+    #         "weight": chan.channel_weight,
+    #         "channels": chan.channel_system
+    #     }
 
 if __name__ == "__main__":
     """
