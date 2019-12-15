@@ -30,7 +30,7 @@ class StatManager:
     
     
     def ___init___(self):
-        self.stat_manager = {
+        self.stats = {
             self.CHAN_SWITCH : defaultdict(list),
             self.CHAN_HOP: defaultdict(list),
             self.NODE_SWITCH: defaultdict(list),
@@ -50,19 +50,19 @@ class StatManager:
         gen_key = lambda x, y: str(x) + "_" + str(y)
         # CHAN_SWITCH CHART
         chan_switch_key = gen_key(num_nodes, num_hops)
-        self.stat_manager[self.CHAN_SWITCH][chan_switch_key][str(num_channels)].append(num_switches)
+        self.stats[self.CHAN_SWITCH][chan_switch_key][str(num_channels)].append(num_switches)
         
         # CHAN_HOP chart
         chan_hop_key = gen_key(num_nodes, num_switches)
-        self.stat_manager[self.CHAN_HOP][chan_hop_key][str(num_channels)].append(num_hops)
+        self.stats[self.CHAN_HOP][chan_hop_key][str(num_channels)].append(num_hops)
         
         # NODE_SWITCH chart
         node_switch_key = gen_key(num_channels, num_hops)
-        self.stat_manager[self.NODE_SWITCH][node_switch_key][str(num_nodes)].append(num_switches)
+        self.stats[self.NODE_SWITCH][node_switch_key][str(num_nodes)].append(num_switches)
         
         # NODE_HOP chart
         node_hop_key = gen_key(num_channels, num_switches)
-        self.stat_manager[self.NODE_HOP][node_switch_key][str(num_nodes)].append(num_hops)
+        self.stats[self.NODE_HOP][node_switch_key][str(num_nodes)].append(num_hops)
         
 if __name__ == "__main__":
     x = StatManager()

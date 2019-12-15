@@ -1,7 +1,7 @@
 from channel import Channels
-from collections import namedtuple, defaultdict
 from priority_queue import PriorityQueue
 from datetime import datetime
+from collections import namedtuple, defaultdict
 
 create_best_route = namedtuple("BestRoute", "cost best_route")
 create_stat_package = namedtuple("StatPackage", "cost best_route exp_results")

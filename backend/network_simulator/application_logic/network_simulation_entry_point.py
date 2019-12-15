@@ -1,3 +1,4 @@
+from stat_manager import StatManager
 import grid
 import graph
 import json
@@ -33,10 +34,7 @@ class NetworkSimulationEntryPoint:
         # number of hops of the y axis
         # number of channels on the x axis with channel switches and hops on the
         # y axis
-        self._sys_stats = {
-            "nodes": {},
-            "channels": {}
-        }
+        self._stat_manager = StatManager()
         self._entry_grid = grid.Grid(base_station_list)
         self._entry_graph = graph.RoutingSystemMasterGraph(
             self._entry_grid.device_data,
@@ -112,14 +110,17 @@ class NetworkSimulationEntryPoint:
         number_of_channels = len(self._entry_graph.channels.channels)
         number_of_nodes = len(self._entry_graph)
         number_of_hops = len(route) - 1
-        number_of_channels_used = len(set([channel for channels_used in route.values() for channel in channels_used]))
+        number_of_switches = len(set([channel for channels_used in route.values() for channel in channels_used]))
         if route:
-            print(number_of_channels, number_of_nodes, number_of_hops, number_of_channels_used)
+            self._stat_manager.collect_stats_from_route_data(number_of_channels,
+                                                             number_of_nodes,
+                                                             number_of_hops,
+                                                             number_of_switches)
         return json.dumps(route)
    
    
     def retrieve_system_results_as_json(self):
-        return self._sys_stats
+        return json.dumps(self._stat_manager.stats)
     
     # def retrieve_system_results_as_json(self):
     #     """
