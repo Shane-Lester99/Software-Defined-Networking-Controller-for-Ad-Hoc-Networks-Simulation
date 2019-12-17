@@ -118,6 +118,28 @@ class RoutingSystemMasterGraph:
             self._clogged_at_node[node][1].extend(chan_used)
             output_route[node] = chan_used
         return output_route
+        
+            
+    def get_reachable_nodes(self, node):
+        """
+        Retrieves all the nodes reachable from a source node.
+        Implements this as a depth first search to retrieve a list
+        of all reachable nodes.
+        """
+        if node not in self.graph:
+            return set()
+        reachable_nodes = set()
+        visited = {node_name: False for node_name in self.graph.keys()}
+        stack = [node]
+        visited[node] = True
+        while stack:
+            curr_node = stack.pop()
+            reachable_nodes.add(curr_node)
+            for pot_new_node in self.graph[curr_node][1]:
+                if visited[pot_new_node] == False:
+                    stack.append(pot_new_node)
+                    visited[pot_new_node] = True
+        return reachable_nodes 
     
     def _find_candidate_paths(self, source, dest):
         """

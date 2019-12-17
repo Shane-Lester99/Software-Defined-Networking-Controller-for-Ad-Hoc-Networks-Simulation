@@ -86,6 +86,12 @@ class NetworkSimulationEntryPoint:
     def reset_graph(self):
         self._entry_grid = None
         self._entry_graph = None
+        
+    def get_reachable_nodes_as_json(self, node_label):
+        """
+        Querys all the nodes that can be reached from a node label
+        """
+        return json.dumps(self._entry_graph.get_reachable_nodes(node_label))
             
     def run_cli_instance(self, bs_list, channel_amount):
         """
