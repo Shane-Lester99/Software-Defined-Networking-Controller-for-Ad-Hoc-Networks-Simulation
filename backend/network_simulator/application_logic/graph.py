@@ -139,7 +139,8 @@ class RoutingSystemMasterGraph:
                 if visited[pot_new_node] == False:
                     stack.append(pot_new_node)
                     visited[pot_new_node] = True
-        return reachable_nodes 
+        reachable_nodes.remove(node)
+        return list(reachable_nodes)
     
     def _find_candidate_paths(self, source, dest):
         """
