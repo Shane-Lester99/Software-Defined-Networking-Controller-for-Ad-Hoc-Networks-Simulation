@@ -163,6 +163,7 @@ class NetworkSimulationEntryPoint:
         """
         self._stat_manager.reset()
         successful_queries = 0
+        
         queryId = 0
         node_amount = [5]
         channel_amount = [6, 8, 10]
