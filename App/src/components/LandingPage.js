@@ -1,15 +1,14 @@
 import React from 'react';
 import './styles/index.css';
-import data from '../../assets/data.json';
-import channel from '../../assets/channel.json';
-import {buildUrl, queryApi} from '../requests.js'
+import StatPage from './StatsPage';
 
 class LandingPage extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
       numberOfNodes: "",
-      channel: 5,
+      tab: 'Home',
+      channel: 0,
       elements: [],
       displayError: "hidden",
     };
@@ -22,11 +21,19 @@ class LandingPage extends React.Component {
     return Math.floor(Math.random() * Math.floor(max));
   }
 
-  randomize () {
+  getGraph = async() => {
+    let graph = await fetch(`http://127.0.0.1:8080/network_simulator/init_sim/${this.state.numberOfNodes}/${this.state.channel}`)
+    .then(res => res.json())
+    .then(random_graph => random_graph)
+    .catch(err => err)
+    return graph;
+  }
+
+  randomize = async() => {
     let nodes = this.state.numberOfNodes.split(',');
-    let incorrectInput =
+    let incorrectInput = !this.state.numberOfNodes ||
       nodes.some(node => {
-        return isNaN(node);
+        return isNaN(node) || parseInt(node) < 1 || parseInt(node) > 5;
       });
 
     if(incorrectInput || isNaN(this.state.channel) ||
@@ -39,6 +46,9 @@ class LandingPage extends React.Component {
       this.setState({displayError: "hidden"})
     }
 
+    const raw_graph = await this.getGraph();
+    const data = raw_graph.graph;
+    const channel = raw_graph.channels;
     let graph = [];
     for(const node in data) {
       let device = {
@@ -54,69 +64,7 @@ class LandingPage extends React.Component {
         }
       }
       graph.push(device);
-
-      /*
-      for(const edges in data[node].edges) {
-
-        let edge = {
-          data: {
-            source: node,
-            target: data[node].edges[edges],
-            label: `10`,
-            color: "red",
-            type: "edge",
-          },
-          group:"edges"
-        }
-        graph.push(edge);
-      }
-      */
     }
-    /*
-    for (let num = 0; num < this.state.numberOfNodes; num++) {
-      let data = {
-        data: {
-          id: num,
-          label: `N${num}`,
-          type:'device'
-        },
-        position: {
-          x: this.getRandomInt(100),
-          y: this.getRandomInt(100)
-        },
-      };
-      elements.push(data);
-    }
-    for (let num = 0; num < this.state.numberOfBaseStations; num++) {
-      let data = {
-        data: {
-          id: `Base Station ${num}`,
-          label: `BS${num}`,
-          type: 'baseStation'
-        },
-        position: {
-          x: this.getRandomInt(100),
-          y: this.getRandomInt(100)
-        }
-      };
-      elements.push(data);
-    }
-    
-    for (let num = 0; num <= this.state.numberOfNodes; num++) {
-      let source = this.getRandomInt(this.state.numberOfNodes);
-      let target = this.getRandomInt(this.state.numberOfNodes);
-      if(source != target) {
-        let data = {
-          data: {
-            source: source,
-            target: target,
-            label: `Edge from ${source} to ${target}`
-          }
-        };
-        elements.push(data);
-      }
-    }
-    */
 
     this.props.setData(graph,channel);
     this.props.changePage("Graph");
@@ -132,12 +80,30 @@ class LandingPage extends React.Component {
     this.setState({
       channel: parseInt(e.target.value),
     })
-}
 
-  render() {
-    return(
-      <div id="landingPage">
-        <h1 id="title">Wireless Network Simulation </h1>
+  }
+
+  changeTab = (e) => {
+    this.setState({tab: e.target.getAttribute('name')})
+  }
+
+  tabBar = () => {
+    if(this.state.tab === "Home") {
+      return <div id="tabBar">
+          <h2 className={`tab display`}>Home</h2>
+          <h2 name="stats" className="tab" onClick={this.changeTab}>System Stats</h2>
+        </div>
+    } else if(this.state.tab === "stats") {
+      return <div id="tabBar">
+          <h2 name="Home" className={`tab`} onClick={this.changeTab}>Home</h2>
+          <h2 className="tab display">System Stats</h2>
+        </div>
+    }
+  }
+
+  renderPage = () => {
+    if(this.state.tab === "Home")
+      return(
         <div id="prompt">
           <h2>Please Enter </h2>
           {
@@ -146,7 +112,7 @@ class LandingPage extends React.Component {
             </p> 
           }
           <h3>Number of Nodes Per Base Station</h3>
-          <input placeholder={'Comma separated'} onChange={this.nodeInput} />
+          <input placeholder={'Comma separated (1-5)'} onChange={this.nodeInput} />
           <br/>
           <h3>Number of Channels</h3>
           <input placeholder={'4-10'} onChange={this.channelInput} />
@@ -154,6 +120,18 @@ class LandingPage extends React.Component {
           <br/>
           <button id="randomizeButton" onClick={this.randomize}>Randomize</button>
         </div>
+      )
+    else if(this.state.tab === "stats") {
+      return <StatPage />
+    }
+  }
+
+  render() {
+    return(
+      <div id="landingPage">
+        <h1 id="title">Wireless Network Simulation </h1>
+        {this.tabBar()}
+        {this.renderPage()}
       </div>
     )
   }

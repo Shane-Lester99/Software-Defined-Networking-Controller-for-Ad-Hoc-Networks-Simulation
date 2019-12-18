@@ -29,6 +29,7 @@ function buildUrl(argumentsArray) {
         case CREATE_GRAPH:
             let baseStationList = argumentsArray[1]
             let channelAmount = argumentsArray[2]
+            console.log(BASE_URL + `/init_sim/${baseStationList}/${channelAmount}`)
             return BASE_URL + `/init_sim/${baseStationList}/${channelAmount}`
         case FIND_ROUTE:
             let sourceNode = argumentsArray[1]
@@ -80,6 +81,11 @@ initSim.then(x=> console.log("graph init", x))
              query.then(x => console.log("Query3", x))
              .catch(err => console.log(err))
         })
+        .then(function() {
+            let query = queryApi(buildUrl([GET_REACHABLE_NODES, "R03"]))
+            query.then(x => console.log("Reachable", x))
+            .catch(err => console.log(err))
+       })
 // const initSim = callInitSystem([4,4,4], 5)
 // initSim.then(x => console.log("graphinit ", x))
 //       .then(function() {

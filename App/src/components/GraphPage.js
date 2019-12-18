@@ -1,7 +1,6 @@
 import React from 'react';
 import CytoscapeComponent from "react-cytoscapejs";
 import Icon from '../../assets/touch-screen.svg';
-import routeData from '../../assets/route.json';
 import './styles/index.css'
 import StatPage from './StatsPage';
 
@@ -14,9 +13,9 @@ export default class GraphPage extends React.Component {
       type:'',
       name: '',
       baseStation: '',
+      reachableNodes: [],
       x: '',
       y: '',
-      tab: 'graph'
     }
     this.addLink = this.addLink.bind(this);
     this.sourceInput = this.sourceInput.bind(this);
@@ -25,56 +24,20 @@ export default class GraphPage extends React.Component {
     this.getRandomColor = this.getRandomColor.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     if(this.state.tab === "stats")
       return;
     this.cy.center();
     this.cy.nodes().ungrabify();
-    this.cy.on('click', 'node[type="device"]', function(evt){
+    this.cy.on('click', 'node[type="device"]', async function(evt){
       let node = evt.target;
       let id = node.id();
       let position = node.position();
-      this.setState({
-        type:'Device',
-        name: `Node ${id}`,
-        x:position.x/10,
-        y:position.y/10,
-        baseStation: node._private.data.base_station_name,
-      })
-    }.bind(this));
-    this.cy.on('click', 'node[type="baseStation"]', function(evt){
-      let node = evt.target;
-      let id = node.id();
-      let position = node.position();
-      this.setState({
-        type:'Base Station',
-        name: id,
-        x:position.x,
-        y:position.y,
-      })
-    }.bind(this));
-    this.cy.on('click', 'edge', function(evt){
-      let edge = evt.target;
-      let source = edge.data('source');
-      let target = edge.data('target');
-      let label = edge.data('label');
-      this.setState({
-        type:'Edge',
-        name: `Edge from Node ${source} to Node ${target}`,
-        channel: label,
-      })
-    }.bind(this));
-  }
-
-  componentDidUpdate() {
-    if(this.state.tab === "stats")
-      return;
-    this.cy.center();
-    this.cy.nodes().ungrabify();
-    this.cy.on('click', 'node[type="device"]', function(evt){
-      let node = evt.target;
-      let id = node.id();
-      let position = node.position();
+      /*
+      let reachableNodes = await fetch(`http://127.0.0.1:8080/network_simulator/get_reachable_nodes/${id}`)
+      .then(res => res.json())
+      .then(data => console.log(data));
+      */
       this.setState({
         type:'Device',
         name: `Node ${id}`,
@@ -128,9 +91,14 @@ export default class GraphPage extends React.Component {
 </table>
   }
 
-  addLink = () => {
-
+  addLink = async() => {
+    let routeData = await fetch(`http://127.0.0.1:8080/network_simulator/route_data/${this.state.source}/${this.state.target}`)
+    .then(res => res.json())
+    .then(data => data)
+    .catch(err => err);
     try {
+      if (Object.entries(routeData).length === 0 && routeData.constructor === Object)
+        throw "Path Could not be established"
       let current;
       let previous;
       let color = this.getRandomColor();
@@ -169,14 +137,12 @@ export default class GraphPage extends React.Component {
   }
 
   sourceInput = (e) => {
-    if(!isNaN(e.target.value) && parseInt(e.target.value) <= 10 && parseInt(e.target.value) >= 0)
       this.setState({
         source: e.target.value,
       })
   }
 
   targetInput = (e) => {
-    if(!isNaN(e.target.value) && parseInt(e.target.value) <= 10 && parseInt(e.target.value) >= 0)
       this.setState({
         target: e.target.value,
       })
@@ -189,6 +155,7 @@ export default class GraphPage extends React.Component {
           <p>Type: {this.state.type}</p>
           <p>Label: {this.state.name}</p>
           <p>Base Station: {this.state.baseStation}</p>
+          <p>Reachable Nodes: {this.state.reachableNodes}</p>
           <p>Coordinates: {`[${this.state.x}, ${this.state.y}]`}</p>
         </div>  
       )
@@ -202,57 +169,41 @@ export default class GraphPage extends React.Component {
       )
   }
 
-  changeTab = (e) => {
-    this.setState({tab: e.target.getAttribute('name')})
-  }
-
-  tabBar = () => {
-    if(this.state.tab === "graph") {
-      return <div id="tabBar">
-          <h2 className={`tab display`}>Graph</h2>
-          <h2 name="stats" className="tab" onClick={this.changeTab}>System Stats</h2>
-        </div>
-    } else if(this.state.tab === "stats") {
-      return <div id="tabBar">
-          <h2 name="graph" className={`tab`} onClick={this.changeTab}>Graph</h2>
-          <h2 className="tab display">System Stats</h2>
-        </div>
-    }
-  }
-
-  renderGraph = () => {
-    return <div id="graphContainer">
-    <div id="channel">
-      {this.channelData()}
-    </div>
-      <CytoscapeComponent
-        className={"graph"}
-        cy={(cy) => { this.cy = cy }}
-        elements={this.props.data}
-        zoom={5}
-        stylesheet={stylesheet}
-      />
-      <div id="data">
-        <div id="addLink">
-          <h2>Add Connection</h2>
-          <input placeholder={"Source Node"} onChange={this.sourceInput}></input>
-          <input placeholder={"Target Node"} onChange={this.targetInput}></input>
-          <br/>
-          <button id="addButton" onClick={this.addLink}>Add Route</button>
-        </div>
-        <h2 style={{textAlign:'center'}}>Selected Data</h2>
-        {this.getData()}
-        <button id="resetButton" onClick={() => this.props.changePage('Landing')}>Reset</button>
-      </div>
-  </div>
+  reset = async() => {
+    await fetch("http://127.0.0.1:8080/network_simulator/reset/")
+    .then(res => res)
+    .catch(err => err)
+    this.props.changePage('Landing');
   }
 
   render () {
     return (
       <div id="graphPage">
         <h1 id="graphTitle">Network Simulation</h1>
-        {this.tabBar()}
-        {this.state.tab === "graph" ? this.renderGraph() : <StatPage/>}
+        <div id="graphContainer">
+          <div id="channel">
+            {this.channelData()}
+          </div>
+            <CytoscapeComponent
+              className={"graph"}
+              cy={(cy) => { this.cy = cy }}
+              elements={this.props.data}
+              zoom={5}
+              stylesheet={stylesheet}
+            />
+            <div id="data">
+              <div id="addLink">
+                <h2>Add Connection</h2>
+                <input placeholder={"Source Node"} onChange={this.sourceInput}></input>
+                <input placeholder={"Target Node"} onChange={this.targetInput}></input>
+                <br/>
+                <button id="addButton" onClick={this.addLink}>Add Route</button>
+              </div>
+              <h2 style={{textAlign:'center'}}>Selected Data</h2>
+              {this.getData()}
+              <button id="resetButton" onClick={this.reset}>Reset</button>
+            </div>
+        </div>
       </div>
     );
   }
@@ -295,7 +246,6 @@ const stylesheet = [
       lineStyle: 'dotted',
       targetArrowColor: 'data(color)',
       fontSize:3,
-      textRotation: 'autorotate',
       textMarginY: -3,
       textMarginX: 2,
     }

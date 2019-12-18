@@ -15,7 +15,11 @@ export default class StatPage extends React.Component {
     }
   }
   componentDidMount() {
-
+    for(const chart in chartData) {
+      if(chart === "chan_switch") {
+        
+      }
+    }
   }
 
   render() {
