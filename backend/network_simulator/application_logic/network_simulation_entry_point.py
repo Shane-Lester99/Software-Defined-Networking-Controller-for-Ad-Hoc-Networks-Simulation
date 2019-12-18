@@ -117,10 +117,6 @@ class NetworkSimulationEntryPoint:
             x = input("Please specify query path in form <device_id_1><device_id2>:")
             source, dest = x[:3], x[3:]
             print(self.retrieve_query_results_as_json(source, dest))
-            
-    def retrieve_channels_as_json(self):
-        return json.dumps(self.entry_graph.channels.channels)
-            
     
     def retrieve_query_results_as_json(self, source_node, dest_node):
         """
@@ -159,8 +155,18 @@ class NetworkSimulationEntryPoint:
 
         do this same algorithm for 1 - 8 base stations each with 5 nodes to a
         a base station.
+        
+        In total this will generate 8 * 5 * 3 * 5 = 600 queries to generate
+        stable state routing data.
         """
         pass
+        # node_amount = [5]
+        # channel_amount = [6, 8, 10]
+        # for chan in channel_amount:
+        #     retrieve_random_graph_as_json(node_amount, chan)
+        #     for _ in range(5):
+        #         # find all nodes with a transmission 
+        #       pass
     
 if __name__ == "__main__":
     """
