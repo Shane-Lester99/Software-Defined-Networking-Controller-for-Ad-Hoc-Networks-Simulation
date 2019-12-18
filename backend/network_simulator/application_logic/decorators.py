@@ -6,7 +6,7 @@ import random
 
 def validate_key(pq_add_task_func):
     """
-    Validate priority queue key s.t. it is of form (<float>, some_obj)
+    Validate priority queue key s.t. it is of form (<Number>, some_obj)
     """
     def check_key(*args, **kwargs):
         input_val = args[1]
@@ -17,6 +17,31 @@ def validate_key(pq_add_task_func):
         else:
             raise ValueError("PriorityQueue input must be of type (<float>, some_obj)")
     return check_key
+    
+def validate_amount(init_channel_func):
+    """
+    Channel amount should be between 4 and 10 or else ValueError
+    """
+    def check_amount(*args, **kwargs):
+        amount = args[1]
+        if (4 <= amount <= 10):
+            init_channel_func(*args, **kwargs)
+        else:
+            raise ValueError("Channel amount must have length between 4 and 10")
+    return check_amount
+    
+def validate_path(try_path_func):
+    """
+    Path length must be no greater then 7 and no less then 2 or else ValueError
+    Note that this gives us between 1 to 6 hops
+    """
+    def check_path(*args, **kwargs):
+        path = args[2]
+        if 2 <= len(path) <= 7:
+            return try_path_func(*args, **kwargs)
+        else:
+            raise ValueError("Path must be between length 2 and 8")
+    return check_path
     
 def validate_grid_input(grid_init_func):
     """

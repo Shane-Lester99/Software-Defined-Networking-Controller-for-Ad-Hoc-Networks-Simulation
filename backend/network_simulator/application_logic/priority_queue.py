@@ -23,6 +23,9 @@ class PriorityQueue:
     def pop_task(self):
         return heapq.heappop(self.heap)
     
+    def __getitem__(self, index):
+        return self.heap[index]
+    
     def __repr__(self):
         return str(self.heap)
     

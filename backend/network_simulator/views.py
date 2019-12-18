@@ -8,9 +8,9 @@ sys.path.append("/".join([os.getcwd(), "network_simulator", "application_logic"]
 
 import network_simulation_entry_point as sim
 
-network_routing_system = None
+network_routing_system = sim.NetworkSimulationEntryPoint()
 
-def init_sim(req, base_station_list):
+def init_sim(req, base_station_list, channel_amount):
     """
     Initializes the system and returns the graph as json. If it is called and
     the system is already initialized, then it will just return the json graph of the
@@ -18,11 +18,11 @@ def init_sim(req, base_station_list):
     the server must be reset.
     """
     global network_routing_system
-    if not network_routing_system:
+    if not network_routing_system.entry_graph:
         try:
-            base_station_arr = [int(device) for device in base_station_list if device != "_"]
-            network_routing_system = sim.NetworkSimulationEntryPoint(base_station_arr)
-            json_graph = network_routing_system.retrieve_random_graph_as_json()
+            base_station_list = [int(device) for device in base_station_list if device != ","]
+            json_graph = network_routing_system.retrieve_random_graph_as_json(base_station_list,
+                                                                              channel_amount)
             return HttpResponse(json_graph, content_type="application/json", status=200)
         except ValueError as err: 
             return HttpResponse(content="Error: " + str(err), status=400)
@@ -35,10 +35,26 @@ def route_data(req, source, dest):
     Query and retrieve the stats from the graph here
     """
     global network_routing_system
-    if not network_routing_system:
-        return HttpResponse("Error: Must initialize app before query", status=400)
+    if not network_routing_system.entry_graph:
+        return HttpResponse("Error: Must initialize graph before query", status=400)
     json_stats = network_routing_system.retrieve_query_results_as_json(source, dest)
     return HttpResponse(json_stats, content_type="application/json", status=200)
+    
+def get_reachable_nodes(req, source_node):
+    global network_routing_system
+    if not network_routing_system.entry_graph:
+        return HttpResponse("Error: Must initialize graph before query", status=400)
+    json_nodes = network_routing_system.get_reachable_nodes_as_json(source_node)
+    return HttpResponse(json_nodes, content_type="application/json", status=200)
+    
+    
+def reset_graph(req):
+    global network_routing_system
+    if not network_routing_system.entry_graph:
+        return HttpResponse("Error: Must initialize graph before query", status=400)
+    network_routing_system.reset_graph()
+    return HttpResponse(status=200)
+    
     
 def collect_stats(req):
     """
@@ -48,5 +64,10 @@ def collect_stats(req):
     if not network_routing_system:
         return HttpResponse("Error: Must initialize app before query", status=400)
     json_stats = network_routing_system.retrieve_system_results_as_json()
-    print(json_stats)
     return HttpResponse(json_stats, content_type="application/json", status=200)
+    
+def run_many_simulations(req):
+    """
+    This will run lots of simuolations and then return the system stats
+    """
+    pass
