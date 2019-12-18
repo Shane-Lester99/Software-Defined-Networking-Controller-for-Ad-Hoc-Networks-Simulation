@@ -188,7 +188,7 @@ class NetworkSimulationEntryPoint:
                     print(random_edge_node)
                     query = self.retrieve_query_results_as_json(random_node, random_edge_node)
                     if query:
-                        print("Query {} success with data: {}", queryId, query)
+                        print("Query {} success with data: {}".format(queryId, query))
                         successful_queries += 1
                 
         print("{} out of 600 queries successful.".format(successful_queries))
