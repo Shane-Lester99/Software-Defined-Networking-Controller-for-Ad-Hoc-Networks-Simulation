@@ -40,6 +40,12 @@ async function callSystemStats() {
     return res
 }
 
+export {
+    callInitSystem,
+    callQueryRoute,
+    callSystemStats,
+};
+
 
 // This is an example of how to call these async functions. Note that 
 // callInitSystem is what has to be called first (or else 400 response). 

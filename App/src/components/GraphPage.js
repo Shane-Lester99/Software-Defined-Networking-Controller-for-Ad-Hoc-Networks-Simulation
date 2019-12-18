@@ -1,8 +1,9 @@
 import React from 'react';
 import CytoscapeComponent from "react-cytoscapejs";
 import Icon from '../../assets/touch-screen.svg';
-import data from '../../assets/sampleNodes.json';
+import routeData from '../../assets/route.json';
 import './styles/index.css'
+import StatPage from './StatsPage';
 
 export default class GraphPage extends React.Component {
   constructor(props) {
@@ -12,16 +13,21 @@ export default class GraphPage extends React.Component {
       target: '',
       type:'',
       name: '',
+      baseStation: '',
       x: '',
       y: '',
-      channel: '',
+      tab: 'graph'
     }
     this.addLink = this.addLink.bind(this);
     this.sourceInput = this.sourceInput.bind(this);
     this.targetInput = this.targetInput.bind(this);
+    this.channelData = this.channelData.bind(this);
+    this.getRandomColor = this.getRandomColor.bind(this);
   }
 
   componentDidMount() {
+    if(this.state.tab === "stats")
+      return;
     this.cy.center();
     this.cy.nodes().ungrabify();
     this.cy.on('click', 'node[type="device"]', function(evt){
@@ -29,10 +35,11 @@ export default class GraphPage extends React.Component {
       let id = node.id();
       let position = node.position();
       this.setState({
-        type:'Node',
+        type:'Device',
         name: `Node ${id}`,
-        x:position.x,
-        y:position.y,
+        x:position.x/10,
+        y:position.y/10,
+        baseStation: node._private.data.base_station_name,
       })
     }.bind(this));
     this.cy.on('click', 'node[type="baseStation"]', function(evt){
@@ -59,25 +66,106 @@ export default class GraphPage extends React.Component {
     }.bind(this));
   }
 
+  componentDidUpdate() {
+    if(this.state.tab === "stats")
+      return;
+    this.cy.center();
+    this.cy.nodes().ungrabify();
+    this.cy.on('click', 'node[type="device"]', function(evt){
+      let node = evt.target;
+      let id = node.id();
+      let position = node.position();
+      this.setState({
+        type:'Device',
+        name: `Node ${id}`,
+        x:position.x/10,
+        y:position.y/10,
+        baseStation: node._private.data.base_station_name,
+      })
+    }.bind(this));
+    this.cy.on('click', 'node[type="baseStation"]', function(evt){
+      let node = evt.target;
+      let id = node.id();
+      let position = node.position();
+      this.setState({
+        type:'Base Station',
+        name: id,
+        x:position.x,
+        y:position.y,
+      })
+    }.bind(this));
+    this.cy.on('click', 'edge', function(evt){
+      let edge = evt.target;
+      let source = edge.data('source');
+      let target = edge.data('target');
+      let label = edge.data('label');
+      this.setState({
+        type:'Edge',
+        name: `Edge from Node ${source} to Node ${target}`,
+        channel: label,
+      })
+    }.bind(this));
+  }
+
+  channelData = () => {
+    
+    let channels = this.props.channel.map((cost,index) => {
+      return <tr key={index}>
+        <td>{index}</td>
+        <td>{cost}</td>
+      </tr>
+    })
+    return <table id="table">
+    <thead>
+    <tr>
+        <th key="channel">Channel</th>
+        <th key="cost">Cost</th>
+    </tr>
+    </thead>
+    <tbody>
+      {channels}
+    </tbody>
+</table>
+  }
+
   addLink = () => {
-    let edge= {
-      group: "edges",
-      data: {
-        source: this.state.source,
-        target: this.state.target,
-        label: `Edge from N${this.state.source} to N${this.state.target}`,
-        color: 'red',
-      }
-    }
-    let route;
+
     try {
-      route = require(`../../assets/sampleRoute${this.state.source}${this.state.target}.json`)
+      let current;
+      let previous;
+      let color = this.getRandomColor();
+      for(const route in routeData) {
+        if(current === undefined) {
+          current = route;
+        } else {
+          previous = current;
+          current = route;
+          let edge= {
+            group: "edges",
+            data: {
+              source: previous,
+              target: current,
+              label: routeData[route][0],
+              color: color,
+            }
+          }
+          this.cy.add(edge);
+        }
+      }
     }
     catch {
       alert('Path could not be established');
       return;
     }
-    this.cy.add(route);
+  }
+
+  getRandomColor = () => {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
   }
 
   sourceInput = (e) => {
@@ -95,17 +183,18 @@ export default class GraphPage extends React.Component {
   }
 
   getData = () => {
-    if(this.state.type === 'Node' || this.state.type === 'Base Station')
+    if(this.state.type === 'Device' || this.state.type === 'Base Station')
       return (
-        <div>
+        <div id="informationBox">
           <p>Type: {this.state.type}</p>
           <p>Label: {this.state.name}</p>
+          <p>Base Station: {this.state.baseStation}</p>
           <p>Coordinates: {`[${this.state.x}, ${this.state.y}]`}</p>
         </div>  
       )
     else if(this.state.type === 'Edge')
       return (
-        <div>
+        <div id="informationBox">
           <p>Type: {this.state.type}</p>
           <p>Label: {this.state.name}</p>
           <p>Channel: {`${this.state.channel}`}</p>
@@ -113,32 +202,57 @@ export default class GraphPage extends React.Component {
       )
   }
 
+  changeTab = (e) => {
+    this.setState({tab: e.target.getAttribute('name')})
+  }
+
+  tabBar = () => {
+    if(this.state.tab === "graph") {
+      return <div id="tabBar">
+          <h2 className={`tab display`}>Graph</h2>
+          <h2 name="stats" className="tab" onClick={this.changeTab}>System Stats</h2>
+        </div>
+    } else if(this.state.tab === "stats") {
+      return <div id="tabBar">
+          <h2 name="graph" className={`tab`} onClick={this.changeTab}>Graph</h2>
+          <h2 className="tab display">System Stats</h2>
+        </div>
+    }
+  }
+
+  renderGraph = () => {
+    return <div id="graphContainer">
+    <div id="channel">
+      {this.channelData()}
+    </div>
+      <CytoscapeComponent
+        className={"graph"}
+        cy={(cy) => { this.cy = cy }}
+        elements={this.props.data}
+        zoom={5}
+        stylesheet={stylesheet}
+      />
+      <div id="data">
+        <div id="addLink">
+          <h2>Add Connection</h2>
+          <input placeholder={"Source Node"} onChange={this.sourceInput}></input>
+          <input placeholder={"Target Node"} onChange={this.targetInput}></input>
+          <br/>
+          <button id="addButton" onClick={this.addLink}>Add Route</button>
+        </div>
+        <h2 style={{textAlign:'center'}}>Selected Data</h2>
+        {this.getData()}
+        <button id="resetButton" onClick={() => this.props.changePage('Landing')}>Reset</button>
+      </div>
+  </div>
+  }
+
   render () {
     return (
       <div id="graphPage">
         <h1 id="graphTitle">Network Simulation</h1>
-        <div id="graphContainer">
-          <CytoscapeComponent
-            className={"graph"}
-            cy={(cy) => { this.cy = cy }}
-            elements={data}
-            zoom={5}
-            stylesheet={stylesheet}
-          />
-          <div id="data">
-            <div id="addLink">
-              <h2>Add Connection</h2>
-              <input placeholder={"Source Node"} onChange={this.sourceInput}></input>
-              <input placeholder={"Target Node"} onChange={this.targetInput}></input>
-              <br/>
-              <button id="addButton" onClick={this.addLink}>Add Link</button>
-            </div>
-            <h2 style={{textAlign:'center'}}>Selected Data</h2>
-            {this.getData()}
-
-          </div>
-
-        </div>
+        {this.tabBar()}
+        {this.state.tab === "graph" ? this.renderGraph() : <StatPage/>}
       </div>
     );
   }
@@ -182,7 +296,8 @@ const stylesheet = [
       targetArrowColor: 'data(color)',
       fontSize:3,
       textRotation: 'autorotate',
-      textMarginY: -2,
+      textMarginY: -3,
+      textMarginX: 2,
     }
   }
 ]
