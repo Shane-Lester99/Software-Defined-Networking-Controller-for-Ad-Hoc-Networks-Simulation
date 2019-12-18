@@ -3,6 +3,7 @@ import grid
 import graph
 import json
 from datetime import datetime
+import random
 
 def run_cli_in_main():
     """
@@ -141,6 +142,7 @@ class NetworkSimulationEntryPoint:
     def retrieve_system_results_as_json(self):
         return json.dumps(self._stat_manager.stats)
         
+        
     def generate_metrics_report(self):
         """
         This method will generate a large amount of graphs and a large amount of
@@ -157,19 +159,45 @@ class NetworkSimulationEntryPoint:
         a base station.
         
         In total this will generate 8 * 5 * 3 * 5 = 600 queries to generate
-        stable state routing data.
+        stable state routing data. However, a lot of those might not have worked,
+        so the ceiling is 600 but will be less then that
         """
-        pass
-        # node_amount = [5]
-        # channel_amount = [6, 8, 10]
-        # for chan in channel_amount:
-        #     retrieve_random_graph_as_json(node_amount, chan)
-        #     for _ in range(5):
-        #         # find all nodes with a transmission 
-        #       pass
+        self._stat_manager.reset()
+        successful_queries = 0
+        
+        queryId = 0
+        node_amounts = [[5] * i for i in range(1,9)]
+        channel_amount = [6, 8, 10]
+        for bs_list in node_amounts:
+            for chan in channel_amount:
+                self._entry_grid = grid.Grid(bs_list)
+                self.entry_graph = graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
+                                                                  self._entry_grid.TRANSMISSION_RADIUS,
+                                                                  chan)
+                for _ in range(5):
+                    # Generate a random node that has at least one edge
+                    queryId += 1
+                    try:
+                        print(self.entry_graph.graph.items())
+                        random_node =  random.choice([node_label for node_label, node_values in self.entry_graph.graph.items() if node_values[1]])
+                    except IndexError:
+                        continue
+                    reachable_nodes = self.entry_graph.get_reachable_nodes(random_node)
+                    print(random_node)
+                    random_edge_node = random.choice(reachable_nodes)
+                    print(random_edge_node)
+                    query = self.retrieve_query_results_as_json(random_node, random_edge_node)
+                    if query:
+                        print("Query {} success with data: {}".format(queryId, query))
+                        successful_queries += 1
+                
+        print("{} out of 600 queries successful.".format(successful_queries))
+        return self.retrieve_system_results_as_json()
     
 if __name__ == "__main__":
     """
     Run this file as the entry to envoke the CLI version of this application
     """
-    run_cli_in_main()
+    # run_cli_in_main()
+    x = NetworkSimulationEntryPoint()
+    print(x.generate_metrics_report())

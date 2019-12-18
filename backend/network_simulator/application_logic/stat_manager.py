@@ -72,6 +72,14 @@ class StatManager:
         node_hop_key = gen_key(num_channels, num_switches)
         self.stats[self.NODE_HOP][node_hop_key][str(num_nodes)].append(num_hops)
         
+    def reset(self):
+        self.stats = {
+            self.CHAN_SWITCH : defaultdict(lambda: defaultdict(list)),
+            self.CHAN_HOP: defaultdict(lambda: defaultdict(list)),
+            self.NODE_SWITCH: defaultdict(lambda: defaultdict(list)),
+            self.NODE_HOP: defaultdict(lambda: defaultdict(list))
+        }
+        
 if __name__ == "__main__":
     x = StatManager()
     x.collect_stats_from_route_data(10, 11, 12, 13)

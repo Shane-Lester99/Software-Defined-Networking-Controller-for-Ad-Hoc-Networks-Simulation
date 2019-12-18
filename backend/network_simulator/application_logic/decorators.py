@@ -40,7 +40,7 @@ def validate_path(try_path_func):
         if 2 <= len(path) <= 7:
             return try_path_func(*args, **kwargs)
         else:
-            raise ValueError("Path must be between length 2 and 8")
+            raise ValueError("Path must be between length 2 and 8. It is {}".format(path))
     return check_path
     
 def validate_grid_input(grid_init_func):
