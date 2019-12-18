@@ -3,6 +3,7 @@ import grid
 import graph
 import json
 from datetime import datetime
+import random
 
 def run_cli_in_main():
     """
@@ -157,16 +158,34 @@ class NetworkSimulationEntryPoint:
         a base station.
         
         In total this will generate 8 * 5 * 3 * 5 = 600 queries to generate
-        stable state routing data.
+        stable state routing data. However, a lot of those might not have worked,
+        so the ceiling is 600 but will be less then that
         """
-        pass
-        # node_amount = [5]
-        # channel_amount = [6, 8, 10]
-        # for chan in channel_amount:
-        #     retrieve_random_graph_as_json(node_amount, chan)
-        #     for _ in range(5):
-        #         # find all nodes with a transmission 
-        #       pass
+        self._stat_manager.reset()
+        successful_queries = 0
+        queryId = 0
+        node_amount = [5]
+        channel_amount = [6, 8, 10]
+        for chan in channel_amount:
+            self._entry_grid = grid.Grid(node_amount)
+            self.entry_graph = graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
+                                                              self._entry_grid.TRANSMISSION_RADIUS,
+                                                              channel_amount)
+            for _ in range(5):
+                # Generate a random node that has at least one edge
+                queryId += 1
+                try:
+                    random_node =  random.choice([node_label for node_label, graph_dict in self.entry_graph["graph"].items() if graph_dict["edges"]])
+                except IndexError:
+                    continue
+                random_edge_node = random.choice([node_label for node_label in self.entry_graph["graph"][random_node]])
+                query = self.retrieve_query_results_as_json(random_node, random_edge_node)
+                if query:
+                    print("Query {} success with data: {}", queryId, query)
+                    successful_queries += 1
+                
+        print("{} out of 600 queries successful.".format(successful_queries))
+        return self.retrieve_system_results_as_json()
     
 if __name__ == "__main__":
     """
