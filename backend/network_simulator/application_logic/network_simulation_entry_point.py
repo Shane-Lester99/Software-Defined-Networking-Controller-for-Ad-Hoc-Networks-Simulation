@@ -142,7 +142,8 @@ class NetworkSimulationEntryPoint:
     def retrieve_system_results_as_json(self):
         return json.dumps(self._stat_manager.stats)
         
-    def generate_metrics_report(self):
+        
+    def generate_metrics_report(self)
         """
         This method will generate a large amount of graphs and a large amount of
         queries to collect a lot of system stats to collect metrics on 
