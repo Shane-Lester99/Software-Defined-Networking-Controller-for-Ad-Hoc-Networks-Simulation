@@ -2,13 +2,13 @@ import React from 'react';
 import './styles/index.css';
 import data from '../../assets/data.json';
 import channel from '../../assets/channel.json';
+import {buildUrl, queryApi} from '../requests.js'
 
 class LandingPage extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
       numberOfNodes: "",
-      numberOfBaseStations: 0,
       channel: 5,
       elements: [],
       displayError: "hidden",
@@ -16,7 +16,6 @@ class LandingPage extends React.Component {
     this.randomize = this.randomize.bind(this);
     this.getRandomInt = this.getRandomInt.bind(this);
     this.nodeInput = this.nodeInput.bind(this);
-    this.baseStationInput = this.baseStationInput.bind(this);
   }
 
   getRandomInt (max) {
@@ -25,15 +24,12 @@ class LandingPage extends React.Component {
 
   randomize () {
     let nodes = this.state.numberOfNodes.split(',');
-    let incorrectInput = nodes.length !== this.state.numberOfBaseStations ||
+    let incorrectInput =
       nodes.some(node => {
         return isNaN(node);
       });
 
     if(incorrectInput || isNaN(this.state.channel) ||
-      isNaN(this.state.numberOfBaseStations) ||
-      this.state.numberOfBaseStations < 1 || 
-      this.state.numberOfBaseStations > 3 ||
       this.state.channel < 4 ||
       this.state.channel > 10) {
       
@@ -42,8 +38,6 @@ class LandingPage extends React.Component {
     } else {
       this.setState({displayError: "hidden"})
     }
-
-    console.log(nodes.map(num => parseInt(num)));
 
     let graph = [];
     for(const node in data) {
@@ -140,12 +134,6 @@ class LandingPage extends React.Component {
     })
 }
 
-  baseStationInput = (e) => {
-      this.setState({
-        numberOfBaseStations: parseInt(e.target.value)
-      })
-  }
-
   render() {
     return(
       <div id="landingPage">
@@ -163,8 +151,6 @@ class LandingPage extends React.Component {
           <h3>Number of Channels</h3>
           <input placeholder={'4-10'} onChange={this.channelInput} />
           <br/>
-          <h3>Number of Base Stations</h3>
-          <input placeholder={'1-3'} onChange={this.baseStationInput}/>
           <br/>
           <button id="randomizeButton" onClick={this.randomize}>Randomize</button>
         </div>
