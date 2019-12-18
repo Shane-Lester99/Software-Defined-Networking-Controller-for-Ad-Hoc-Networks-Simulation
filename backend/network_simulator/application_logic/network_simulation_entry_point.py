@@ -16,8 +16,8 @@ def run_cli_in_main():
         if x == "y" or x == "Y":
             print("\nTo set up the network topology, write a list of 1 to 8 numbers.")
             print("Each number signifies how many user devices are associated with that base station.\n")
-            bs_str = input("Please enter these numbers now as a single space seperated list:")
-            bs_list = [int(char) for char in bs_str if char != " "]
+            bs_str = input("Please enter these numbers now as a comma seperated list:")
+            bs_list = [int(char) for char in bs_str if char != ","]
             chan_amount_str = input("Please enter an amount of channels between 4 and 10:")
             chan_amount = int(chan_amount_str)
             entry.run_cli_instance(bs_list, chan_amount)
@@ -39,7 +39,7 @@ class NetworkSimulationEntryPoint:
     def __init__(self):
         self._stat_manager = StatManager()
         self._entry_grid = None
-        self._entry_graph = None
+        self.entry_graph = None
         
     def retrieve_random_graph_as_json(self, bs_list= None, channel_amount= None):
         """
@@ -47,33 +47,38 @@ class NetworkSimulationEntryPoint:
         the random graph that will remain static after initialization.
         JSON is of form:
         {
-            "R02": {
-                "metadata": {
-                    base_station_name: "B02",
-                    base_station_coordinates: [6,9],
-                    node_coordinates: [4,8]
-                },
-                "edges" : {
-                    "R03" : {
-                        "id": <int>,
-                        "weight": <float>,
-                        "channels": <List>
-                    }, ...
+            "channels": [0.91,0.33,...]
+            "graph": {
+                "R02": {
+                    "metadata": {
+                        base_station_name: "B02",
+                        base_station_coordinates: [6,9],
+                        node_coordinates: [4,8]
+                    },
+                    "edges" : {
+                        "R03" : {
+                            "id": <int>,
+                            "weight": <float>,
+                            "channels": <List>
+                        }, ...
+                    }
                 }
             }
         }
         """
-        if not self._entry_grid and not self._entry_graph:
+        if not self._entry_grid and not self.entry_graph:
             self._entry_grid = grid.Grid(bs_list)
-            self._entry_graph = graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
-                                                               self._entry_grid.TRANSMISSION_RADIUS,
-                                                           channel_amount)
-        json_dict = dict()
-        for node_name, entries in self._entry_graph.graph.items():
+            self.entry_graph = graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
+                                                              self._entry_grid.TRANSMISSION_RADIUS,
+                                                              channel_amount)
+        CHANNEL_KEY = "channels"
+        GRAPH_KEY = "graph"
+        json_dict = {CHANNEL_KEY: self.entry_graph.channels.channels, GRAPH_KEY: {}}
+        for node_name, entries in self.entry_graph.graph.items():
             metadata = entries[0]
             connected_edges = entries[1]
             string_connected_edges = [node_name for node_name in connected_edges]
-            json_dict[node_name] = {
+            json_dict[GRAPH_KEY][node_name] = {
                  "metadata": {
                      "base_station_name": metadata.base_station_name,
                      "base_station_coordinates": metadata.base_station_coordinates,
@@ -85,13 +90,13 @@ class NetworkSimulationEntryPoint:
         
     def reset_graph(self):
         self._entry_grid = None
-        self._entry_graph = None
+        self.entry_graph = None
         
     def get_reachable_nodes_as_json(self, node_label):
         """
         Querys all the nodes that can be reached from a node label
         """
-        return json.dumps(self._entry_graph.get_reachable_nodes(node_label))
+        return json.dumps(self.entry_graph.get_reachable_nodes(node_label))
             
     def run_cli_instance(self, bs_list, channel_amount):
         """
@@ -102,7 +107,6 @@ class NetworkSimulationEntryPoint:
         """
         self.retrieve_random_graph_as_json(bs_list, channel_amount)
         print(self._entry_grid)
-        print(self._entry_graph.channels)
         print(self.retrieve_random_graph_as_json())
         while True:
             exit_string = input("Would you like to specify a query path (Y/N):")
@@ -115,18 +119,18 @@ class NetworkSimulationEntryPoint:
             print(self.retrieve_query_results_as_json(source, dest))
             
     def retrieve_channels_as_json(self):
-        return json.dumps(self._entry_graph.channels.channels)
+        return json.dumps(self.entry_graph.channels.channels)
             
     
     def retrieve_query_results_as_json(self, source_node, dest_node):
         """
         The API allows for running a single query, and this will be the output.
         """
-        route = self._entry_graph.retrieve_optimal_path_and_allocate_channels(
+        route = self.entry_graph.retrieve_optimal_path_and_allocate_channels(
                                                                     source_node,
                                                                     dest_node)
-        number_of_channels = len(self._entry_graph.channels.channels)
-        number_of_nodes = len(self._entry_graph)
+        number_of_channels = len(self.entry_graph.channels.channels)
+        number_of_nodes = len(self.entry_graph)
         number_of_hops = len(route) - 1
         number_of_switches = len(set([channel for channels_used in route.values()
                                  for channel in channels_used]))
@@ -140,6 +144,23 @@ class NetworkSimulationEntryPoint:
    
     def retrieve_system_results_as_json(self):
         return json.dumps(self._stat_manager.stats)
+        
+    def generate_metrics_report(self):
+        """
+        This method will generate a large amount of graphs and a large amount of
+        queries to collect a lot of system stats to collect metrics on 
+        routing interarrival rates.
+        
+        The algorithm works like this:
+        
+        start with 5 nodes to one base station
+        allow for 6, 8, 10 channels on it
+        query a random node in that graph to a random reachable value 5 times
+
+        do this same algorithm for 1 - 8 base stations each with 5 nodes to a
+        a base station.
+        """
+        pass
     
 if __name__ == "__main__":
     """
