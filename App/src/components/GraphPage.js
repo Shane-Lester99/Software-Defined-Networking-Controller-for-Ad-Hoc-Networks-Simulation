@@ -35,7 +35,7 @@ export default class GraphPage extends React.Component {
       let id = node.id();
       let position = node.position();
       
-      let reachableNodes = await fetch(`http://127.0.0.1:8080/network_simulator/get_reachable_nodes/${id}`)
+      let reachableNodes = await fetch(`http://127.0.0.1:8081/network_simulator/get_reachable_nodes/${id}`)
       .then(res => res.json())
       .then(data => data);
 
@@ -98,7 +98,7 @@ export default class GraphPage extends React.Component {
   }
 
   addLink = async() => {
-    let routeData = await fetch(`http://127.0.0.1:8080/network_simulator/route_data/${this.state.source}/${this.state.target}`)
+    let routeData = await fetch(`http://127.0.0.1:8081/network_simulator/route_data/${this.state.source}/${this.state.target}`)
     .then(res => res.json())
     .then(data => data)
     .catch(err => err);
@@ -195,7 +195,7 @@ export default class GraphPage extends React.Component {
   }
 
   reset = async() => {
-    await fetch("http://127.0.0.1:8080/network_simulator/reset/")
+    await fetch("http://127.0.0.1:8081/network_simulator/reset/")
     .then(res => res)
     .catch(err => err)
     this.props.changePage('Landing');

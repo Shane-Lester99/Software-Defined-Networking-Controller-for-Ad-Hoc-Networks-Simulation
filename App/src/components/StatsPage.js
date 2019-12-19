@@ -25,7 +25,7 @@ export default class StatPage extends React.Component {
       stats = this.props.data;
       this.setState({data:stats});
     } else {
-      stats = await fetch('http://127.0.0.1:8080/network_simulator/collect_stats')
+      stats = await fetch('http://127.0.0.1:8081/network_simulator/collect_stats')
       .then(res => res.json())
       .then(data => data)
       .catch(err => err)
