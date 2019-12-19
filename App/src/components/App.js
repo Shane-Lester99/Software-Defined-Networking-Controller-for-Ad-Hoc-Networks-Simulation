@@ -1,7 +1,6 @@
 import React from "react";
 import LandingPage from './LandingPage';
 import GraphPage from './GraphPage'
-import TabBar from './TabBar'
 import './styles/index.css'
 
 
@@ -11,6 +10,7 @@ export default class App extends React.Component{
     this.state = {
       page: "Landing",
       data: [],
+      channel: [],
     }
     this.changePage = this.changePage.bind(this);
     this.renderPage = this.renderPage.bind(this);
@@ -22,9 +22,10 @@ export default class App extends React.Component{
     })
   }
   
-  setData = (data) => {
+  setData = (data,channel) => {
     this.setState({
-      data: data,
+      data,
+      channel,
     })
   }
 
@@ -32,13 +33,17 @@ export default class App extends React.Component{
     if(this.state.page === "Landing")
       return <LandingPage changePage={this.changePage} setData={this.setData}/>
     else(this.state.page === "Graph")
-      return <GraphPage changePage={this.changePage} data={this.state.data}/>
+      return <GraphPage 
+        changePage={this.changePage} 
+        data={this.state.data} 
+        channel={this.state.channel}
+      />
   }
 
   render() {
     return(
       <div id="page">
-        <TabBar changePage={this.changePage}/>
+        <h1 id="graphTitle">Wireless Network Simulation</h1>
         {this.renderPage()}
       </div>
     )

@@ -29,6 +29,7 @@ function buildUrl(argumentsArray) {
         case CREATE_GRAPH:
             let baseStationList = argumentsArray[1]
             let channelAmount = argumentsArray[2]
+            console.log(BASE_URL + `/init_sim/${baseStationList}/${channelAmount}`)
             return BASE_URL + `/init_sim/${baseStationList}/${channelAmount}`
         case FIND_ROUTE:
             let sourceNode = argumentsArray[1]
