@@ -176,32 +176,42 @@ class NetworkSimulationEntryPoint:
         node_amounts = [[[3] * i for i in range(1,9)],
                         [[4] * i for i in range(1,9)],
                         [[5] * i for i in range(1,9)]]
-        node_amounts = [bs_list_sml for bs_list in node_amounts for bs_list_sml in bs_list]
+        node_amounts = [bs_list_sml for bs_list in node_amounts for bs_list_sml
+                        in bs_list]
         channel_amount = [4, 5, 6, 7, 8, 9, 10]
         for bs_list in node_amounts:
             for chan in channel_amount:
                 self._entry_grid = grid.Grid(bs_list)
-                self.entry_graph = graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
-                                                                  self._entry_grid.TRANSMISSION_RADIUS,
-                                                                  chan)
+                self.entry_graph = \
+                    graph.RoutingSystemMasterGraph(self._entry_grid.device_data,
+                                                   self._entry_grid.TRANSMISSION_RADIUS,
+                                                   chan)
                 for _ in range(5):
                     # Generate a random node that has at least one edge
                     queryId += 1
                     try:
-                        random_node =  random.choice([node_label for node_label, node_values in self.entry_graph.graph.items() if node_values[1]])
+                        random_node =  random.choice(
+                            [node_label for node_label,
+                            node_values in self.entry_graph.graph.items()
+                            if node_values[1]])
                     except IndexError:
                         continue
                     reachable_nodes = self.entry_graph.get_reachable_nodes(random_node)
                     random_edge_node = random.choice(reachable_nodes)
-                    query_results = self.retrieve_query_results_as_json(random_node, random_edge_node)
+                    query_results = self.retrieve_query_results_as_json(random_node,
+                                                                        random_edge_node)
                     if query_results != "{}":
-                        print("Query {} success with: \n\tData: {}\n\tBase stations: {}\n\tChannels: {}".format(queryId,
-                                                                                                                query_results,
-                                                                                                                bs_list,
-                                                                                                                self.entry_graph.channels.channels))
+                        qstr1 = "Query {} success with:".format(queryId)
+                        qstr2 =  "\n\tData: {}.".format(query_results)
+                        qstr3 = "\n\tBase stations: {}".format(bs_list)
+                        chans = self.entry_graph.channels.channels
+                        qstr4 = "\n\tChannels: {}".format(chans)
+                        print(qstr1, qstr2, qstr3, qstr4)
                         successful_queries += 1
         end = time.time()
-        print("{} out of {} queries successful in {} seconds.".format(successful_queries, queryId, end - start))
+        print("{} out of {} queries successful in {} seconds.".format(successful_queries,
+                                                                      queryId,
+                                                                      end - start))
         return self.retrieve_system_results_as_json()
     
 if __name__ == "__main__":
