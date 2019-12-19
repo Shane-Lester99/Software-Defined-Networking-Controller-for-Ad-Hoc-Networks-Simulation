@@ -20,12 +20,18 @@ export default class StatPage extends React.Component {
     }
   }
   async componentDidMount () {
-    let stats = await fetch('http://127.0.0.1:8080/network_simulator/collect_stats')
-    .then(res => res.json())
-    .then(data => data)
-    .catch(err => err)
+    let stats;
+    if(this.props.data) {
+      stats = this.props.data;
+      this.setState({data:stats});
+    } else {
+      stats = await fetch('http://127.0.0.1:8080/network_simulator/collect_stats')
+      .then(res => res.json())
+      .then(data => data)
+      .catch(err => err)
 
-    this.setState({data:stats});
+      this.setState({data:stats});
+    }
 
     for(const chart in stats) {
       let constants = [];
@@ -69,7 +75,7 @@ export default class StatPage extends React.Component {
     return (
       <div id="statPage">    
         <div className="chart">
-          <Select name="chan_switch" options={this.state.chan_switch} onChange={this.onSelect} placeholder="Select an option" />
+          <Select className="select" options={this.state.chan_switch} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
             height={200}>
@@ -83,8 +89,16 @@ export default class StatPage extends React.Component {
               text="Number of Channels"
               className="alt-x-label"
               includeMargin={false}
-              xPercent={0.4}
+              xPercent={0.35}
               yPercent={1.30}
+              />
+
+            <ChartLabel
+              text="Channels vs Switches"
+              className="chartTitle"
+              includeMargin={false}
+              xPercent={0.35}
+              yPercent={0.05}
               />
 
             <ChartLabel
@@ -101,7 +115,7 @@ export default class StatPage extends React.Component {
           </XYPlot>
         </div>
         <div className="chart">
-        <Select name="chan_hop" options={this.state.chan_hop} onChange={this.onSelect} placeholder="Select an option" />
+        <Select className="select" options={this.state.chan_hop} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
             height={200}>
@@ -115,8 +129,16 @@ export default class StatPage extends React.Component {
               text="Number of Channels"
               className="alt-x-label"
               includeMargin={false}
-              xPercent={0.4}
+              xPercent={0.35}
               yPercent={1.30}
+              />
+            
+            <ChartLabel
+              text="Channels vs Hops"
+              className="chartTitle"
+              includeMargin={false}
+              xPercent={0.35}
+              yPercent={0.05}
               />
 
             <ChartLabel
@@ -147,8 +169,16 @@ export default class StatPage extends React.Component {
               text="Number of Nodes"
               className="alt-x-label"
               includeMargin={false}
-              xPercent={0.4}
+              xPercent={0.35}
               yPercent={1.30}
+              />
+            
+            <ChartLabel
+              text="Nodes vs Switches"
+              className="chartTitle"
+              includeMargin={false}
+              xPercent={0.35}
+              yPercent={0.05}
               />
 
             <ChartLabel
@@ -166,7 +196,7 @@ export default class StatPage extends React.Component {
           </XYPlot>
         </div>
         <div className="chart">
-        <Select name="node_hop" options={this.state.node_hop} onChange={this.onSelect} placeholder="Select an option" />
+        <Select className="select" options={this.state.node_hop} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
             height={200}>
@@ -180,8 +210,16 @@ export default class StatPage extends React.Component {
               text="Number of Nodes"
               className="alt-x-label"
               includeMargin={false}
-              xPercent={0.4}
+              xPercent={0.35}
               yPercent={1.30}
+              />
+            
+            <ChartLabel
+              text="Nodes vs Hops"
+              className="chartTitle"
+              includeMargin={false}
+              xPercent={0.35}
+              yPercent={0.05}
               />
 
             <ChartLabel

@@ -42,6 +42,8 @@ function buildUrl(argumentsArray) {
             return BASE_URL + `/get_reachable_nodes/${source}`
         case RESET_GRAPH:
            return BASE_URL + `/reset/`
+        case RUN_METRICS_COLLECTION:
+            return BASE_URL + `/run_many_simulations/`
         default:
             throw new Error("Requesting non existent route. Exiting.")
     }
@@ -64,28 +66,27 @@ async function queryApi(url) {
 // Also note that the django sever must be launches with ./run_backend.sh before
 // we call the API on path network-routing-simulation.backend.run_backend.sh
 
-const initSim = queryApi(buildUrl([CREATE_GRAPH, [5,5,5, 5, 5], 10]))
-initSim.then(x=> console.log("graph init", x))
-        .then(function() {
-             let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
-             query.then(x => console.log("Query1", x))
-             .catch(err => console.log(err))
-        })
-        .then(function() {
-             let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
-             query.then(x => console.log("Query2", x))
-             .catch(err => console.log(err))
-        })
-        .then(function() {
-             let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
-             query.then(x => console.log("Query3", x))
-             .catch(err => console.log(err))
-        })
-        .then(function() {
-            let query = queryApi(buildUrl([GET_REACHABLE_NODES, "R03"]))
-            query.then(x => console.log("Reachable", x))
-            .catch(err => console.log(err))
-       })
+
+const runMetrics = queryApi(buildUrl([RUN_METRICS_COLLECTION]))
+                    .then(x => console.log(x))
+                    .catch(err => console.log(err))
+// const initSim = queryApi(buildUrl([CREATE_GRAPH, [5,5,5, 5, 5], 10]))
+// initSim.then(x=> console.log("graph init", x))
+//         .then(function() {
+//              let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
+//              query.then(x => console.log("Query1", x))
+//              .catch(err => console.log(err))
+//         })
+//         .then(function() {
+//              let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
+//              query.then(x => console.log("Query2", x))
+//              .catch(err => console.log(err))
+//         })
+//         .then(function() {
+//              let query = queryApi(buildUrl([FIND_ROUTE, "R05", "R03"]))
+//              query.then(x => console.log("Query3", x))
+//              .catch(err => console.log(err))
+//         })
 // const initSim = callInitSystem([4,4,4], 5)
 // initSim.then(x => console.log("graphinit ", x))
 //       .then(function() {

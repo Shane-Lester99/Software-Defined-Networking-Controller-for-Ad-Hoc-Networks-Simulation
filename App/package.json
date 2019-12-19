@@ -36,6 +36,7 @@
     "cytoscape": "^3.12.1",
     "node-fetch": "^2.6.0",
     "react-cytoscapejs": "^1.2.1",
+    "react-loading-overlay": "^1.0.1",
     "react-select": "^3.0.8",
     "react-vis": "^1.11.7"
   }

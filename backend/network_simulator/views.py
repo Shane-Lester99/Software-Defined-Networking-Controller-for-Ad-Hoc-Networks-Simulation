@@ -68,6 +68,12 @@ def collect_stats(req):
     
 def run_many_simulations(req):
     """
-    This will run lots of simuolations and then return the system stats
+    This will run lots of simulations and then return the system stats
     """
-    pass
+    global network_routing_system
+    network_routing_system.reset_graph
+    metrics_report_stats = network_routing_system.generate_metrics_report()
+    return HttpResponse(metrics_report_stats,
+                        content_type="application/json",
+                        status=200)
+    

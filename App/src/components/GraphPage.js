@@ -2,7 +2,6 @@ import React from 'react';
 import CytoscapeComponent from "react-cytoscapejs";
 import Icon from '../../assets/touch-screen.svg';
 import './styles/index.css'
-import StatPage from './StatsPage';
 
 export default class GraphPage extends React.Component {
   constructor(props) {
@@ -78,9 +77,10 @@ export default class GraphPage extends React.Component {
   channelData = () => {
     
     let channels = this.props.channel.map((cost,index) => {
-      return <tr key={index} style={{backgroundColor:this.getColor(index)}}>
+      return <tr key={index}>
         <td>{index}</td>
         <td>{cost}</td>
+        <td style={{backgroundColor:this.getColor(index)}}></td>
       </tr>
     })
     return <table id="table">
@@ -88,6 +88,7 @@ export default class GraphPage extends React.Component {
     <tr>
         <th key="channel">Channel</th>
         <th key="cost">Cost</th>
+        <th key="color">Color</th>
     </tr>
     </thead>
     <tbody>
@@ -203,10 +204,10 @@ export default class GraphPage extends React.Component {
   render () {
     return (
       <div id="graphPage">
-        <h1 id="graphTitle">Network Simulation</h1>
         <div id="graphContainer">
           <div id="channel">
             {this.channelData()}
+
           </div>
             <CytoscapeComponent
               className={"graph"}

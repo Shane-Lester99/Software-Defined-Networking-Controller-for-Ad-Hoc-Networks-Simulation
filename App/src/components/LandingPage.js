@@ -1,6 +1,7 @@
 import React from 'react';
 import './styles/index.css';
 import StatPage from './StatsPage';
+import LoadingOverlay from 'react-loading-overlay'
 
 class LandingPage extends React.Component {
   constructor (props) {
@@ -11,6 +12,9 @@ class LandingPage extends React.Component {
       channel: 0,
       elements: [],
       displayError: "hidden",
+      data: {},
+      metrics: false,
+      waiting: false,
     };
     this.randomize = this.randomize.bind(this);
     this.getRandomInt = this.getRandomInt.bind(this);
@@ -99,19 +103,42 @@ class LandingPage extends React.Component {
 
   }
 
-  changeTab = (e) => {
-    this.setState({tab: e.target.getAttribute('name')})
+  changeTab = async(tab) => {
+    if(this.state.metrics) {
+      await fetch("http://127.0.0.1:8080/network_simulator/reset/")
+      .then(res => res)
+      .catch(err => err)
+    }
+    this.setState({
+      tab: tab,
+      metrics: false,
+    })
+  }
+
+  generateMetrics = async () => {
+    this.setState({waiting: true});
+    await fetch('http://127.0.0.1:8080/network_simulator/run_many_simulations')
+      .then(res => res.json())
+      .then(data => {
+        this.setState({
+          data: data.results,
+          tab: 'stats',
+          metrics: true,
+          waiting: false,
+        });
+      })
+      .catch(err => err)
   }
 
   tabBar = () => {
     if(this.state.tab === "Home") {
       return <div id="tabBar">
           <h2 className={`tab display`}>Home</h2>
-          <h2 name="stats" className="tab" onClick={this.changeTab}>System Stats</h2>
+          <h2 name="stats" className="tab" onClick={() => this.changeTab('stats')}>System Stats</h2>
         </div>
     } else if(this.state.tab === "stats") {
       return <div id="tabBar">
-          <h2 name="Home" className={`tab`} onClick={this.changeTab}>Home</h2>
+          <h2 name="Home" className={`tab`} onClick={() => this.changeTab('Home')}>Home</h2>
           <h2 className="tab display">System Stats</h2>
         </div>
     }
@@ -121,20 +148,20 @@ class LandingPage extends React.Component {
     if(this.state.tab === "Home")
       return(
         <div id="prompt">
-          <h2>Please Enter </h2>
+          <h2 className="promptTitle">Please Enter </h2>
           {
             <p id="errorMessage" className={this.state.displayError}>
               Invalid Input
             </p> 
           }
-          <h3>Number of Nodes Per Base Station</h3>
+          <h3 className="promptTitle">Number of Nodes Per Base Station</h3>
           <input placeholder={'Comma separated (1-5)'} onChange={this.nodeInput} />
-          <br/>
-          <h3>Number of Channels</h3>
+          <h3 className="promptTitle">Number of Channels</h3>
           <input placeholder={'4-10'} onChange={this.channelInput} />
           <br/>
-          <br/>
           <button id="randomizeButton" onClick={this.randomize}>Randomize</button>
+          <br/>
+          <button id="metricsButton" onClick={this.generateMetrics}>Generate Metrics automatically</button>
         </div>
       )
     else if(this.state.tab === "stats") {
@@ -145,9 +172,15 @@ class LandingPage extends React.Component {
   render() {
     return(
       <div id="landingPage">
-        <h1 id="title">Wireless Network Simulation </h1>
+        <LoadingOverlay
+          active={this.state.waiting}
+          spinner
+          text='Loading your content...'
+        >
+
         {this.tabBar()}
         {this.renderPage()}
+        </LoadingOverlay>
       </div>
     )
   }

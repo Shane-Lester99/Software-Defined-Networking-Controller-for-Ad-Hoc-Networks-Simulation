@@ -43,6 +43,7 @@ export default class App extends React.Component{
   render() {
     return(
       <div id="page">
+        <h1 id="graphTitle">Wireless Network Simulation</h1>
         {this.renderPage()}
       </div>
     )

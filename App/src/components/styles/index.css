@@ -15,21 +15,20 @@ div {
 .show {color:red;}
 
 #page {
-  height: 100%;
-  width: 100%;
-  align-items: center;
-}
-
-#landingPage {
   background-image: url("../../../assets/LandingBackground.jpg");
-  height:100%;
-  width:100%;
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  color:#ffffff;
+  height: 100%;
+  width: 100%;
   align-items: center;
-  justify-content: center;
+  color:#ffffff;
+}
+
+#landingPage {
+  height:80%;
+  width:100%;
+  align-items: center;
   text-align: center;
   display:flex;
   flex-direction: column;
@@ -38,14 +37,15 @@ div {
 #title {
   margin:0;
   padding:0;
-  padding-top: 5%;
   font-size: 5vh;
+  padding-top: 5%;
 }
 
 #prompt {
   font-size: 2vh;
-  padding:0;
-  margin:0;
+  padding: 15px;
+  background-color: white;
+  color:black;
 }
 
 input {
@@ -58,20 +58,23 @@ input {
 
 #randomizeButton {
   background-color: rgb(200, 142, 89);
-  color: black;
+  color: rgb(224, 218, 218);
+  font-size: 2vh;
+  border-radius: 5px;
+}
+
+#metricsButton {
+  margin-top: 10px;
+  background-color: #3549f9;
+  color:rgb(224, 218, 218);
   font-size: 2vh;
   border-radius: 5px;
 }
 
 #graphPage {
-  height:100%;
+  height:80%;
   width:100%;
   margin:auto;
-  background-image: url("../../../assets/LandingBackground.jpg");
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  color:#ffffff;
   display:flex;
   flex-direction: column;
   align-items: center;
@@ -103,8 +106,8 @@ input {
 }
 
 .tab {
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
 .display {
@@ -151,9 +154,12 @@ input {
 
 #channel {
   background-color: rgb(245, 244, 244);
-  width: 150px;
+  width: 175px;
   height:525px;
   color:black;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #informationBox {
@@ -175,12 +181,34 @@ input {
 }
 
 #statPage {
-  width: 1150px;
-  height: 525px;
+  width: 90%;
+  height: 90%;
   background-color: white;
   display:flex;
   flex-direction: row;
   justify-content: center;
   flex-wrap: wrap;
+  color:black;
+  align-items: center;
+}
+
+.chart {
+  margin-left: 50px;
+  margin-right: 50px;
+  color:black;
+}
+
+.select {
+  margin-bottom: 10px;
+}
+
+._loading_overlay_wrapper {
+  align-items: center;
+  text-align: center;
+  display:flex;
+  flex-direction: column;
+}
+
+.chartTitle {
   color:black;
 }
