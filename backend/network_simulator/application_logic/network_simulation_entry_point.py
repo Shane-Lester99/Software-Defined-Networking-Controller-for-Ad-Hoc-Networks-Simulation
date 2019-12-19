@@ -209,10 +209,21 @@ class NetworkSimulationEntryPoint:
                         print(qstr1, qstr2, qstr3, qstr4)
                         successful_queries += 1
         end = time.time()
+        perf = end - start
         print("{} out of {} queries successful in {} seconds.".format(successful_queries,
                                                                       queryId,
-                                                                      end - start))
-        return self.retrieve_system_results_as_json()
+                                                                      perf))
+        data_gen_stats = {
+                            "success": successful_queries,
+                            "attempts": queryId,
+                            "runtime": perf
+                          }
+        sys_stats = self._stat_manager.stats
+        metrics_report = {
+            "performance": data_gen_stats,
+            "results": sys_stats
+        }
+        return json.dumps(metrics_report)
     
 if __name__ == "__main__":
     """
