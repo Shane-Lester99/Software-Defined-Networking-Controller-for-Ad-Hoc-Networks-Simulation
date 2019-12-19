@@ -4,6 +4,7 @@ import graph
 import json
 from datetime import datetime
 import random
+import time
 
 def run_cli_in_main():
     """
@@ -12,6 +13,12 @@ def run_cli_in_main():
     """
     print("This is the CLI version of the Network Routing Simulation.")
     entry = NetworkSimulationEntryPoint()
+    x = input("Would you like to run metrics mode (as opposed to manual) (Y/N)?")
+    if x == "y" or x == "Y":
+        print(entry.generate_metrics_report())
+        print("Goodbye.")
+        return
+    print("Running manual mode.")
     while True:
         x = input("Would you like to build a random graph. (Y/N):")
         if x == "y" or x == "Y":
@@ -162,12 +169,15 @@ class NetworkSimulationEntryPoint:
         stable state routing data. However, a lot of those might not have worked,
         so the ceiling is 600 but will be less then that
         """
+        start = time.time()
         self._stat_manager.reset()
         successful_queries = 0
-        
         queryId = 0
-        node_amounts = [[5] * i for i in range(1,9)]
-        channel_amount = [6, 8, 10]
+        node_amounts = [[[3] * i for i in range(1,9)],
+                        [[4] * i for i in range(1,9)],
+                        [[5] * i for i in range(1,9)]]
+        node_amounts = [bs_list_sml for bs_list in node_amounts for bs_list_sml in bs_list]
+        channel_amount = [4, 5, 6, 7, 8, 9, 10]
         for bs_list in node_amounts:
             for chan in channel_amount:
                 self._entry_grid = grid.Grid(bs_list)
@@ -178,26 +188,24 @@ class NetworkSimulationEntryPoint:
                     # Generate a random node that has at least one edge
                     queryId += 1
                     try:
-                        print(self.entry_graph.graph.items())
                         random_node =  random.choice([node_label for node_label, node_values in self.entry_graph.graph.items() if node_values[1]])
                     except IndexError:
                         continue
                     reachable_nodes = self.entry_graph.get_reachable_nodes(random_node)
-                    print(random_node)
                     random_edge_node = random.choice(reachable_nodes)
-                    print(random_edge_node)
-                    query = self.retrieve_query_results_as_json(random_node, random_edge_node)
-                    if query:
-                        print("Query {} success with data: {}".format(queryId, query))
+                    query_results = self.retrieve_query_results_as_json(random_node, random_edge_node)
+                    if query_results != "{}":
+                        print("Query {} success with: \n\tData: {}\n\tBase stations: {}\n\tChannels: {}".format(queryId,
+                                                                                                                query_results,
+                                                                                                                bs_list,
+                                                                                                                self.entry_graph.channels.channels))
                         successful_queries += 1
-                
-        print("{} out of 600 queries successful.".format(successful_queries))
+        end = time.time()
+        print("{} out of {} queries successful in {} seconds.".format(successful_queries, queryId, end - start))
         return self.retrieve_system_results_as_json()
     
 if __name__ == "__main__":
     """
     Run this file as the entry to envoke the CLI version of this application
     """
-    # run_cli_in_main()
-    x = NetworkSimulationEntryPoint()
-    print(x.generate_metrics_report())
+    run_cli_in_main()
