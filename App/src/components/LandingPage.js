@@ -26,7 +26,7 @@ class LandingPage extends React.Component {
   }
 
   getGraph = async() => {
-    let graph = await fetch(`http://127.0.0.1:8080/network_simulator/init_sim/${this.state.numberOfNodes}/${this.state.channel}`)
+    let graph = await fetch(`http://127.0.0.1:8081/network_simulator/init_sim/${this.state.numberOfNodes}/${this.state.channel}`)
     .then(res => res.json())
     .then(random_graph => random_graph)
     .catch(err => err)
@@ -105,7 +105,7 @@ class LandingPage extends React.Component {
 
   changeTab = async(tab) => {
     if(this.state.metrics) {
-      await fetch("http://127.0.0.1:8080/network_simulator/reset/")
+      await fetch("http://127.0.0.1:8081/network_simulator/reset/")
       .then(res => res)
       .catch(err => err)
     }
@@ -117,7 +117,7 @@ class LandingPage extends React.Component {
 
   generateMetrics = async () => {
     this.setState({waiting: true});
-    await fetch('http://127.0.0.1:8080/network_simulator/run_many_simulations')
+    await fetch('http://127.0.0.1:8081/network_simulator/run_many_simulations')
       .then(res => res.json())
       .then(data => {
         this.setState({
