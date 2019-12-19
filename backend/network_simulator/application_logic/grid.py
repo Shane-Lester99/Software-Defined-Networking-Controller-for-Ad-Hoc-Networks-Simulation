@@ -24,7 +24,9 @@ class Grid:
         self.global_id_inc = 1
         self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
                       for _ in range(self.DIMENSIONS)]
-        self.device_data = self._add_devices(base_station_list)
+        did_generate_grid = False
+        while did_generate_grid == False:
+            self.device_data, did_generate_grid  = self._add_devices(base_station_list)
         
     def __repr__(self):
         repr_str = "***Grid of Network Routing System***\n"
@@ -37,11 +39,31 @@ class Grid:
         Adds all the user devices and base station devices to the grid and
         generates data structure (map[string]string) of base stations to 
         all there routable devices
+        
+        Sometimes an edge case occurs where an infinite loop occurs for no
+        base station placement. When this occurs, we can return None, False
+        and exit out of the function to retry
         """
         device_data = {}
+        # debug_i and j are to handle an edge case where there is no 
+        # place to find for a user device. It resets after either hit
+        # 2000 iterations in a while True loop. The number 2000 was chosen
+        # because it was well above the upper boundary of a healthy case
+        # but not arbritrarilly high to reduce performance
+        debug_i = 0
+        debug_j = 0
+        DEBUG_BOUND = 2000
         for bs_index in range(len(base_station_list)):
             while True:
-                
+                debug_i += 1
+                if debug_i > DEBUG_BOUND:
+                    # This is an edge case where we can't find any free spaces.
+                    # We reset the grid and return a failure. This case is 
+                    # relatively rare.
+                    self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
+                                  for _ in range(self.DIMENSIONS)]
+                    self.global_id_inc = 0
+                    return None, False
                 x_coor = random.randint(1,10) - 1
                 y_coor = random.randint(1, 10) - 1
                 
@@ -61,9 +83,16 @@ class Grid:
                     device_data[curr_base_station] = \
                         create_entry_for_base_station((x_coor, y_coor), list())
                     for _ in range(base_station_list[bs_index]):
-                        
                         while True:
-                            
+                            debug_j += 1
+                            if debug_j > DEBUG_BOUND:
+                                # This is an edge case where we can't find any free spaces.
+                                # We reset the grid and return a failure. This case is 
+                                # relatively rare.
+                                self.grid = [[self.EMPTY_SPACE for _ in range(self.DIMENSIONS)] 
+                                              for _ in range(self.DIMENSIONS)]
+                                self.global_id_inc = 0
+                                return None, False
                             x_coor = random.randint(1,10) - 1
                             y_coor = random.randint(1, 10) - 1
                             
@@ -82,7 +111,7 @@ class Grid:
                                     device_data[curr_base_station].routable_devices.append(curr_device)
                                     break
                     break
-        return device_data
+        return device_data, True
     
     def _create_label(self, label_type):
         """
