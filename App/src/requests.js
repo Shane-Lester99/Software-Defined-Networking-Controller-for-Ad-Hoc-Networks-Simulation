@@ -18,7 +18,7 @@ const GET_SYS_STATS = "get_sys_stats"
 const GET_REACHABLE_NODES = "get_reachable_nodes"
 const RESET_GRAPH = "reset_graph"
 const RUN_METRICS_COLLECTION = "run_metrics_collection"
-const BASE_URL = "http://127.0.0.1:8080/network_simulator"
+const BASE_URL = "http://127.0.0.1:8081/network_simulator"
 
 
 function buildUrl(argumentsArray) {
