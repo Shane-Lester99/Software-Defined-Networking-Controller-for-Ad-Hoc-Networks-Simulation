@@ -31,7 +31,7 @@ class LandingPage extends React.Component {
 
   randomize = async() => {
     let nodes = this.state.numberOfNodes.split(',');
-    let incorrectInput = !this.state.numberOfNodes ||
+    let incorrectInput = !this.state.numberOfNodes || nodes.length > 8 ||
       nodes.some(node => {
         return isNaN(node) || parseInt(node) < 1 || parseInt(node) > 5;
       });
@@ -50,6 +50,7 @@ class LandingPage extends React.Component {
     const data = raw_graph.graph;
     const channel = raw_graph.channels;
     let graph = [];
+    let baseStations = [];
     for(const node in data) {
       let device = {
         data: {
@@ -62,6 +63,21 @@ class LandingPage extends React.Component {
           x:data[node].metadata.node_coordinates[0]*10,
           y:data[node].metadata.node_coordinates[1]*10,
         }
+      }
+      if(baseStations.find(names => names === data[node].metadata.base_station_name) === undefined) {
+        let bStation = {
+          data: {
+            id: data[node].metadata.base_station_name,
+            label: data[node].metadata.base_station_name,
+            type: 'baseStation',
+          },
+          position: {
+            x:data[node].metadata.base_station_coordinates[0]*10,
+            y:data[node].metadata.base_station_coordinates[1]*10,
+          }
+        }
+        graph.push(bStation);
+        baseStations.push(data[node].metadata.base_station_name);
       }
       graph.push(device);
     }

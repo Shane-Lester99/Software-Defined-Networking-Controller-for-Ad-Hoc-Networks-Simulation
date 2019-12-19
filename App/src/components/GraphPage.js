@@ -16,12 +16,14 @@ export default class GraphPage extends React.Component {
       reachableNodes: [],
       x: '',
       y: '',
+      queryNumber: 0,
+      label: '',
     }
     this.addLink = this.addLink.bind(this);
     this.sourceInput = this.sourceInput.bind(this);
     this.targetInput = this.targetInput.bind(this);
     this.channelData = this.channelData.bind(this);
-    this.getRandomColor = this.getRandomColor.bind(this);
+    this.getColor = this.getColor.bind(this);
   }
 
   async componentDidMount() {
@@ -33,17 +35,18 @@ export default class GraphPage extends React.Component {
       let node = evt.target;
       let id = node.id();
       let position = node.position();
-      /*
+      
       let reachableNodes = await fetch(`http://127.0.0.1:8080/network_simulator/get_reachable_nodes/${id}`)
       .then(res => res.json())
-      .then(data => console.log(data));
-      */
+      .then(data => data);
+
       this.setState({
         type:'Device',
         name: `Node ${id}`,
         x:position.x/10,
         y:position.y/10,
         baseStation: node._private.data.base_station_name,
+        reachableNodes: reachableNodes,
       })
     }.bind(this));
     this.cy.on('click', 'node[type="baseStation"]', function(evt){
@@ -53,8 +56,8 @@ export default class GraphPage extends React.Component {
       this.setState({
         type:'Base Station',
         name: id,
-        x:position.x,
-        y:position.y,
+        x:position.x/10,
+        y:position.y/10,
       })
     }.bind(this));
     this.cy.on('click', 'edge', function(evt){
@@ -62,10 +65,12 @@ export default class GraphPage extends React.Component {
       let source = edge.data('source');
       let target = edge.data('target');
       let label = edge.data('label');
+      let channel = edge.data('channel');
       this.setState({
         type:'Edge',
         name: `Edge from Node ${source} to Node ${target}`,
-        channel: label,
+        channel: channel,
+        label: label,
       })
     }.bind(this));
   }
@@ -73,7 +78,7 @@ export default class GraphPage extends React.Component {
   channelData = () => {
     
     let channels = this.props.channel.map((cost,index) => {
-      return <tr key={index}>
+      return <tr key={index} style={{backgroundColor:this.getColor(index)}}>
         <td>{index}</td>
         <td>{cost}</td>
       </tr>
@@ -101,7 +106,6 @@ export default class GraphPage extends React.Component {
         throw "Path Could not be established"
       let current;
       let previous;
-      let color = this.getRandomColor();
       for(const route in routeData) {
         if(current === undefined) {
           current = route;
@@ -113,8 +117,9 @@ export default class GraphPage extends React.Component {
             data: {
               source: previous,
               target: current,
-              label: routeData[route][0],
-              color: color,
+              channel: routeData[route][0],
+              label: this.state.queryNumber, 
+              color: this.getColor(routeData[route][0]),
             }
           }
           this.cy.add(edge);
@@ -125,15 +130,13 @@ export default class GraphPage extends React.Component {
       alert('Path could not be established');
       return;
     }
+    this.setState({queryNumber: this.state.queryNumber+1});
   }
 
-  getRandomColor = () => {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+  getColor = (channel) => {
+    let colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', 
+    '#f032e6', '#bcf60c', '#fabebe'];
+    return colors[channel];
   }
 
   sourceInput = (e) => {
@@ -148,14 +151,34 @@ export default class GraphPage extends React.Component {
       })
   }
 
+  getText = () => {
+    let text = "";
+    this.state.reachableNodes.sort().forEach((device,index) => {
+      if(index === 0) {
+        text += device;
+      } else {
+        text += ', ' + device;
+      }
+    })
+    return text;
+  }
+
   getData = () => {
-    if(this.state.type === 'Device' || this.state.type === 'Base Station')
+    if(this.state.type === 'Device')
       return (
         <div id="informationBox">
           <p>Type: {this.state.type}</p>
           <p>Label: {this.state.name}</p>
           <p>Base Station: {this.state.baseStation}</p>
-          <p>Reachable Nodes: {this.state.reachableNodes}</p>
+          <p>Reachable Nodes: {this.getText()}</p>
+          <p>Coordinates: {`[${this.state.x}, ${this.state.y}]`}</p>
+        </div>  
+      )
+    else if(this.state.type === 'Base Station')
+      return (
+        <div id="informationBox">
+          <p>Type: {this.state.type}</p>
+          <p>Label: {this.state.name}</p>
           <p>Coordinates: {`[${this.state.x}, ${this.state.y}]`}</p>
         </div>  
       )
@@ -165,6 +188,7 @@ export default class GraphPage extends React.Component {
           <p>Type: {this.state.type}</p>
           <p>Label: {this.state.name}</p>
           <p>Channel: {`${this.state.channel}`}</p>
+          <p>Query Number: {`${this.state.label}`}</p>
         </div> 
       )
   }
