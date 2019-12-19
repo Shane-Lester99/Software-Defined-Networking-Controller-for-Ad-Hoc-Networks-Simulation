@@ -65,7 +65,6 @@ export default class StatPage extends React.Component {
         })
       })
     }
-    console.log(data);
     let variable = e.chart + '_data';
     this.setState({[variable]: data})
   }
