@@ -17,6 +17,30 @@ export default class StatPage extends React.Component {
       node_switch_data: [],
       node_hop_data: [],
       data: {},
+      menu2: [],
+      menu3: [],
+      selection1: '',
+      selection2: '',
+      selection3: '',
+      xAxis: '',
+      yAxis:'',
+      chartData: [],
+      frequencyView: false,
+      menu1: [{
+        label:"Channels vs Switches",
+        value: "chan_switch",
+      },
+      {
+        label:"Channels vs Hops",
+        value:"chan_hop"
+      },
+      {
+        label:"Nodes vs Switches",
+        value:"node_switch"
+      }, {
+        label:"Nodes vs Hops",
+        value:"node_hop"
+      }],
     }
   }
   async componentDidMount () {
@@ -29,7 +53,6 @@ export default class StatPage extends React.Component {
       .then(res => res.json())
       .then(data => data)
       .catch(err => err)
-
       this.setState({data:stats});
     }
 
@@ -54,30 +77,142 @@ export default class StatPage extends React.Component {
     }
   }
 
-  onSelect = (e) => {
-    let dataPoints = this.state.data[e.chart][e.value];
-    let data = [];
-    for(let point in dataPoints) {
-      dataPoints[point].forEach(value => {
-         data.push({
-          y: value,
-          x:parseInt(point),
+  onSelect = (e,num) => {
+    if(this.state.frequencyView){
+      switch(num) {
+        case 1:
+          this.setState({
+            selection1: e,
+            menu2:this.state[e.value],
+            selection2: '',
+            selection3: '',
+            xAxis: '',
+            yAxis:'',
+            chartData: [],
+            menu3: [],
+          });
+          break;
+        case 2:
+          let channels = [];
+          for(let channel in this.state.data[this.state.selection1.value][e.value]) {
+            if(this.state.selection1.value[0] === 'c')
+            channels.push({
+              value:channel,
+              label: channel + " Channels",
+            })
+            else
+            channels.push({
+              value:channel,
+              label: channel + " Nodes",
+            })
+          }
+          this.setState({
+            selection2: e,
+            menu3:channels,
+            selection3: '',
+            xAxis: '',
+            yAxis:'',
+            chartData: [],
+          })
+          break;
+        case 3:
+          let xAxis;
+          let yAxis = "Frequency";
+          if(this.state.selection1.value[this.state.selection1.value.length-1] === 'p')
+            xAxis = "Number of Hops";
+          else
+            xAxis = "Number of Switches";
+          let chartData = {};
+          this.state.data[this.state.selection1.value][this.state.selection2.value][e.value].forEach(value => {
+            if(chartData[value] === undefined) {
+              chartData[value] = {
+                x: value,
+                y: 1,
+              }
+            } else {
+              chartData[value].y += 1;
+            }
+          })
+          let data = []
+          for(let point in chartData) {
+            data.push(chartData[point]);
+          }
+          this.setState({xAxis,yAxis,chartData: data,selection3: e});
+          break;
+      }
+    } else {
+      let dataPoints = this.state.data[e.chart][e.value];
+      let data = [];
+      for(let point in dataPoints) {
+        dataPoints[point].forEach(value => {
+           data.push({
+            y: value,
+            x:parseInt(point),
+          })
         })
-      })
+      }
+      let variable = e.chart + '_data';
+      this.setState({[variable]: data})
     }
-    let variable = e.chart + '_data';
-    this.setState({[variable]: data})
+    
   }
 
-  render() {
+  frequencyView = () => {
+    if(this.state.frequencyView) {
+      return (<div id="frequencyView">
+        <Select className="select" options={this.state.menu1} value={this.state.selection1} onChange={(e) => this.onSelect(e,1)} placeholder="Select an option" />
+        <Select className="select" options={this.state.menu2} value={this.state.selection2} onChange={(e) => this.onSelect(e,2)} placeholder="Select an option" />
+        <Select className="select" options={this.state.menu3} value={this.state.selection3} onChange={(e) => this.onSelect(e,3)} placeholder="Select an option" />
+        <XYPlot
+          width={400}
+          height={200}>
+          <HorizontalGridLines />
+          <VerticalBarSeries
+            barWidth={0.1}
+            data={this.state.chartData}/>
+          <XAxis />
+          <YAxis />
+          <ChartLabel
+            text={this.state.xAxis}
+            className="alt-x-label"
+            includeMargin={false}
+            xPercent={0.35}
+            yPercent={1.30}
+            />
 
-    return (
-      <div id="statPage">    
-        <div className="chart">
+          <ChartLabel
+            text={this.state.selection1.label}
+            className="chartTitle"
+            includeMargin={false}
+            xPercent={0.35}
+            yPercent={0.05}
+            />
+
+          <ChartLabel
+            text={this.state.yAxis}
+            className="alt-y-label"
+            includeMargin={false}
+            xPercent={-0.09}
+            yPercent={0.3}
+            style={{
+              transform: 'rotate(-90)',
+              textAnchor: 'end'
+            }}
+          />
+        </XYPlot>
+      </div>)
+    }
+  }
+
+  standardView = () => {
+    if(!this.state.frequencyView) {
+      return(
+        <div id="chartContainer">
+          <div className="chart">
           <Select className="select" options={this.state.chan_switch} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
-            height={200}>
+            height={175}>
             <HorizontalGridLines />
             <VerticalBarSeries
               barWidth={0.1}
@@ -114,10 +249,11 @@ export default class StatPage extends React.Component {
           </XYPlot>
         </div>
         <div className="chart">
-        <Select className="select" options={this.state.chan_hop} onChange={this.onSelect} placeholder="Select an option" />
+          <Select className="select" options={this.state.chan_hop} onChange={this.onSelect} placeholder="Select an option" />
+          <br/>
           <XYPlot
             width={400}
-            height={200}>
+            height={175}>
             <HorizontalGridLines />
             <VerticalBarSeries
               barWidth={0.1}
@@ -154,10 +290,10 @@ export default class StatPage extends React.Component {
           </XYPlot>
         </div>
         <div className="chart">
-        <Select name="node_switch" options={this.state.node_switch} onChange={this.onSelect} placeholder="Select an option" />
+         <Select className="select" options={this.state.node_switch} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
-            height={200}>
+            height={175}>
             <HorizontalGridLines />
             <VerticalBarSeries
               barWidth={0.1}
@@ -198,7 +334,7 @@ export default class StatPage extends React.Component {
         <Select className="select" options={this.state.node_hop} onChange={this.onSelect} placeholder="Select an option" />
           <XYPlot
             width={400}
-            height={200}>
+            height={175}>
             <HorizontalGridLines />
             <VerticalBarSeries
               barWidth={0.1}
@@ -234,6 +370,17 @@ export default class StatPage extends React.Component {
             />
           </XYPlot>
         </div>
+      </div>
+      )
+    }
+  }
+
+  render() {
+
+    return (
+      <div id="statPage">
+        <button id="toggleView" onClick={()=>{this.setState({frequencyView:!this.state.frequencyView})}}>Toggle View</button>
+        {this.state.frequencyView ? this.frequencyView() : this.standardView()}
       </div>
     );
   }
